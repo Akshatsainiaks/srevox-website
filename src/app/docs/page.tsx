@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { 
   BookOpen, ChevronRight, Search, Server, Bell, Shield, 
-  Terminal, Code, Menu, X, Zap, Info, CheckCircle, AlertTriangle, Sparkles, ArrowLeft
+  Terminal, Code, Menu, X, Zap, Info, CheckCircle, AlertTriangle, Sparkles, ArrowLeft, MessageSquare
 } from "lucide-react";
 import Link from "next/link";
 
@@ -117,7 +117,7 @@ function Content({ id }: { id: string }) {
   const map: Record<string, React.ReactNode> = {
     what: (<>
       <h1 className={h2}>What is Srevox?</h1>
-      <p className={p}>Srevox is an open-source, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
+      <p className={p}>Srevox is a self-hosted, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
       <Callout type="tip">SRE + VOX — The voice of your site reliability. Srevox operates completely inside your secure network with local databases.</Callout>
       <h3 className={h3}>Key Features</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
@@ -546,6 +546,9 @@ export default function DocsPage() {
         </div>
         
         <div className="flex items-center gap-4">
+          <Link href="/feedback" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-2">
+            <MessageSquare className="w-3.5 h-3.5" /> Feedback
+          </Link>
           <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 bg-slate-900/40 border border-slate-800/80 rounded-xl px-4 py-2">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
@@ -671,7 +674,7 @@ export default function DocsPage() {
                 <span className="text-slate-400 font-bold">Srevox Docs</span>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
-                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">GitHub</a>
+                <a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">GitHub</a>
                 <a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Setup Guide</a>
                 <a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Discord</a>
                 <a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Twitter</a>

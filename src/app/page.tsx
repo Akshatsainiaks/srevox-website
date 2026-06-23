@@ -276,71 +276,72 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
   }, [selectedIncId]);
 
   return (
-    <div className="min-h-screen bg-[#070913] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden bg-grid-pattern relative">
+    <div className="min-h-screen bg-[#03050c] text-slate-100 font-sans selection:bg-indigo-500/30 overflow-x-hidden bg-grid-pattern relative">
       
       {/* Decorative Blur Orbs */}
-      <div className="absolute top-[-100px] left-[5%] w-[450px] h-[450px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none animate-float z-0" />
-      <div className="absolute top-[350px] right-[5%] w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[150px] pointer-events-none animate-float-reverse z-0" />
-      <div className="absolute bottom-[200px] left-[10%] w-[600px] h-[600px] bg-violet-600/5 rounded-full blur-[180px] pointer-events-none animate-float z-0" />
+      <div className="absolute top-[-150px] left-[10%] w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none animate-float z-0" />
+      <div className="absolute top-[400px] right-[10%] w-[700px] h-[700px] bg-cyan-500/10 rounded-full blur-[160px] pointer-events-none animate-float-reverse z-0" />
+      <div className="absolute bottom-[400px] left-[5%] w-[800px] h-[800px] bg-violet-600/5 rounded-full blur-[180px] pointer-events-none animate-float z-0" />
 
       {/* Header */}
-      <header className="relative z-50 border-b border-slate-900/60 bg-[#070913]/70 backdrop-blur-xl sticky top-0">
+      <header className="relative z-50 border-b border-slate-900/60 bg-[#03050c]/85 backdrop-blur-xl sticky top-0">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <SrevoxLogo size={36} />
+          <div className="flex items-center gap-3.5">
+            <SrevoxLogo size={40} />
             <div className="flex flex-col">
-              <span className="font-extrabold text-white text-xl tracking-tight leading-none">Srevox</span>
-              <span className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-widest">Self-Hosted</span>
+              <span className="font-black text-white text-2xl tracking-tight leading-none">Srevox</span>
+              <span className="text-[9px] text-indigo-400 mt-1.5 uppercase font-bold tracking-widest">Self-Hosted Engine</span>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-400">
-            <a href="#demo" className="hover:text-white transition-colors">Interactive Demo</a>
-            <Link href="/docs" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Docs</Link>
-            <a href="#channels" className="hover:text-white transition-colors">Alert Channels</a>
-            <a href="#configurator" className="hover:text-white transition-colors">Config Builder</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          <nav className="hidden lg:flex items-center gap-8 text-xs uppercase font-extrabold tracking-widest text-slate-400">
+            <a href="#demo" className="hover:text-indigo-400 transition-colors">Console Demo</a>
+            <Link href="/docs" className="text-cyan-400 hover:text-cyan-300 font-bold transition-colors">Documentation</Link>
+            <Link href="/feedback" className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors">Feedback</Link>
+            <a href="#channels" className="hover:text-indigo-400 transition-colors">Integrations</a>
+            <a href="#configurator" className="hover:text-indigo-400 transition-colors">Environment Builder</a>
+            <a href="#faq" className="hover:text-indigo-400 transition-colors">FAQ</a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <a 
-              href="https://github.com/Akshatsainiaks/srevox" 
+              href="https://github.com/Akshatsainiaks/srevox-setup" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs font-bold text-slate-400 hover:text-white transition-all duration-300 flex items-center gap-2 bg-slate-900/80 border border-slate-800/80 rounded-xl px-4 py-2 hover:scale-[1.03] active:scale-[0.98] hover:border-slate-700 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+              className="text-xs font-bold text-slate-300 hover:text-white transition-all duration-300 flex items-center gap-2 bg-slate-950 border border-slate-800/80 rounded-xl px-4 py-2.5 hover:scale-[1.03] active:scale-[0.98] hover:border-slate-700 hover:shadow-[0_0_15px_rgba(99,102,241,0.1)]"
             >
               <Code className="w-4 h-4" /> GitHub
             </a>
             <a 
               href="#configurator" 
-              className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-indigo-600 to-indigo-500 text-white hover:from-indigo-500 hover:to-indigo-400 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/35 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+              className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 text-white hover:from-indigo-500 hover:to-indigo-400 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/35 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
             >
-              Get Started
+              Configure Deployment
             </a>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-20 pb-16 px-6 max-w-7xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold mb-8 animate-pulse-ring">
-          <Zap className="w-3.5 h-3.5 fill-indigo-400/20" /> Kubernetes Pod Crash Alerting
+      <section className="relative z-10 pt-28 pb-20 px-6 max-w-7xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-extrabold mb-8 animate-pulse-ring">
+          <Zap className="w-3.5 h-3.5 fill-indigo-400/20 animate-pulse" /> Kubernetes Failure Alerting Stack
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.08] max-w-5xl mx-auto">
-          Catch container crashes<br />
+        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white leading-[1.03] max-w-5xl mx-auto">
+          Kubernetes crash alerting<br />
           <span className="bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent">
-            before your users do.
+            without the SaaS overhead.
           </span>
         </h1>
 
-        <p className="mt-8 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-          Srevox watches pod failure event streams 24/7, analyzes crash logs natively, and delivers structured AI root-cause diagnostics to Email, Slack, Teams, and WhatsApp.
+        <p className="mt-8 text-base md:text-lg text-slate-400 max-w-xl mx-auto leading-relaxed font-medium">
+          A simple, self-hosted alerting engine that monitors Kubernetes clusters, captures container crashes, and provides fast troubleshooting advice.
         </p>
 
         {/* Setup Command */}
-        <div className="mt-14 max-w-3xl mx-auto p-2.5 rounded-2xl bg-slate-950/80 border border-slate-900 shadow-2xl flex flex-col sm:flex-row items-stretch gap-2">
-          <div className="flex-1 flex items-center px-4 py-3.5 font-mono text-sm text-cyan-400 bg-[#070913] rounded-xl border border-slate-900 select-all overflow-x-auto whitespace-nowrap custom-scrollbar">
+        <div className="mt-14 max-w-3xl mx-auto p-2 bg-slate-950/90 border border-slate-900 shadow-2xl rounded-2xl flex flex-col sm:flex-row items-stretch gap-2">
+          <div className="flex-1 flex items-center px-4 py-3.5 font-mono text-xs md:text-sm text-cyan-400 bg-[#03050c] rounded-xl border border-slate-900 select-all overflow-x-auto whitespace-nowrap custom-scrollbar">
             <span className="text-slate-600 mr-3 select-none">$</span>
             {setupCommand}
           </div>
@@ -354,49 +355,49 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
               </>
             ) : (
               <>
-                <Copy className="w-4 h-4" /> Copy Script
+                <Copy className="w-4 h-4" /> Copy Setup Command
               </>
             )}
           </button>
         </div>
 
         {/* Credentials Callout */}
-        <div className="mt-8 max-w-md mx-auto p-4 rounded-xl glass-panel text-left">
-          <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-2.5">
+        <div className="mt-8 max-w-md mx-auto p-4 rounded-2xl glass-panel text-left">
+          <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-3">
             <Lock className="w-3.5 h-3.5" />
             <span>Default Administrator Credentials (Self-Hosted)</span>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-            <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-900">
-              <span className="text-slate-500 block text-[9px] uppercase tracking-wider mb-0.5">Email</span>
-              <span className="text-slate-300 font-bold select-all">admin@srevox.local</span>
+          <div className="grid grid-cols-2 gap-3.5 text-xs font-mono">
+            <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-900">
+              <span className="text-slate-500 block text-[9px] uppercase tracking-wider mb-1">Email</span>
+              <span className="text-slate-200 font-bold select-all">admin@srevox.local</span>
             </div>
-            <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-900">
-              <span className="text-slate-500 block text-[9px] uppercase tracking-wider mb-0.5">Password</span>
-              <span className="text-slate-300 font-bold select-all">admin123</span>
+            <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-900">
+              <span className="text-slate-500 block text-[9px] uppercase tracking-wider mb-1">Password</span>
+              <span className="text-slate-200 font-bold select-all">admin123</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* SECTION: Interactive Dashboard Simulation */}
-      <section id="demo" className="max-w-7xl mx-auto px-6 py-16 relative z-20">
+      <section id="demo" className="max-w-7xl mx-auto px-6 py-16 relative z-25">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white">Explore Srevox Interface</h2>
-          <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl mx-auto">
-            Interact with this live dashboard simulator. Click on incidents, examine logs, and request AI diagnostics.
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Interactive Platform Console</h2>
+          <p className="text-slate-400 text-sm md:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
+            Click on simulated cluster incidents below to inspect raw logs and witness the AI diagnostics engine suggest immediate manifest corrections.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-950/65 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 glass-panel">
+        <div className="rounded-2xl border border-slate-800/60 bg-slate-950/50 shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 glass-panel">
           
           {/* Mockup Left Sidebar - 3 cols */}
-          <div className="lg:col-span-3 border-r border-slate-900 bg-slate-950/90 p-5 flex flex-col justify-between h-auto lg:h-[620px]">
+          <div className="lg:col-span-3 border-r border-slate-900 bg-[#050711] p-5 flex flex-col justify-between h-auto lg:h-[620px]">
             <div className="space-y-6">
               {/* Brand logo */}
-              <div className="flex items-center gap-2.5 px-2">
-                <SrevoxLogo size={24} />
-                <span className="font-extrabold text-white text-md tracking-tight">Srevox Console</span>
+              <div className="flex items-center gap-3 px-2">
+                <SrevoxLogo size={28} />
+                <span className="font-black text-white text-base tracking-tight">Srevox Admin</span>
               </div>
 
               {/* Sidebar Menu Links */}
@@ -404,7 +405,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                 <button 
                   onClick={() => setDashTab("incidents")}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    dashTab === "incidents" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                    dashTab === "incidents" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -417,66 +418,66 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                 <button 
                   onClick={() => setDashTab("clusters")}
                   className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    dashTab === "clusters" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                    dashTab === "clusters" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"
                   }`}
                 >
                   <Server className="w-4 h-4" />
-                  <span>Clusters</span>
+                  <span>Monitored Clusters</span>
                 </button>
 
                 <button 
                   onClick={() => setDashTab("channels")}
                   className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    dashTab === "channels" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                    dashTab === "channels" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"
                   }`}
                 >
                   <Link2 className="w-4 h-4" />
-                  <span>Alert Channels</span>
+                  <span>Alert Targets</span>
                 </button>
 
                 <button 
                   onClick={() => setDashTab("ai")}
                   className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    dashTab === "ai" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                    dashTab === "ai" ? "bg-indigo-600 text-white" : "text-slate-400 hover:bg-slate-900/50 hover:text-white"
                   }`}
                 >
                   <Cpu className="w-4 h-4" />
-                  <span>AI Rules Config</span>
+                  <span>AI Diagnostics Config</span>
                 </button>
               </div>
             </div>
 
             {/* Sidebar Bottom Metadata */}
-            <div className="p-3 bg-slate-900/50 rounded-xl border border-slate-900 text-[10px] space-y-1">
+            <div className="p-3.5 bg-[#03050c] rounded-xl border border-slate-900 text-[10px] space-y-2">
               <div className="flex items-center justify-between text-slate-500">
-                <span>Instance IP</span>
-                <span className="font-mono text-slate-300">127.0.0.1</span>
+                <span>Docker IP</span>
+                <span className="font-mono text-slate-300">172.18.0.4</span>
               </div>
               <div className="flex items-center justify-between text-slate-500">
                 <span>Agent Status</span>
-                <span className="text-emerald-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Connected
+                <span className="text-emerald-400 flex items-center gap-1.5 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Active
                 </span>
               </div>
             </div>
           </div>
 
           {/* Mockup Main View - 9 cols */}
-          <div className="lg:col-span-9 flex flex-col h-[620px] bg-slate-900/20">
+          <div className="lg:col-span-9 flex flex-col h-[620px] bg-[#03050c]/30">
             
             {/* View Header */}
-            <div className="px-6 py-4 border-b border-slate-900 bg-slate-950/50 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="text-sm font-black text-white capitalize">{dashTab}</span>
+            <div className="px-6 py-4.5 border-b border-slate-900 bg-slate-950/40 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-black text-white capitalize">{dashTab === "ai" ? "AI Rules" : dashTab}</span>
                 {dashTab === "incidents" && (
-                  <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 text-[10px] font-bold border border-red-500/10">
-                    2 Active Issues
+                  <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 text-[9px] font-bold border border-red-500/10">
+                    2 CRITICAL FAILURE EVENTS
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">prod-gke-us cluster active</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">GKE Cluster monitoring active</span>
               </div>
             </div>
 
@@ -488,30 +489,30 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                 <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 h-full items-stretch">
                   
                   {/* Incidents Table list - 5 cols */}
-                  <div className="xl:col-span-5 space-y-3.5">
-                    <span className="text-slate-500 text-[11px] font-bold uppercase tracking-wider block">Incidents Stream</span>
+                  <div className="xl:col-span-5 space-y-3">
+                    <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest block mb-1">Active Incident Socket</span>
                     {mockIncidents.map((inc) => (
                       <div 
                         key={inc.id}
                         onClick={() => setSelectedIncId(inc.id)}
                         className={`p-4 rounded-xl border transition-all cursor-pointer text-left relative overflow-hidden ${
                           selectedIncId === inc.id
-                            ? "bg-indigo-500/10 border-indigo-500/60 shadow-lg shadow-indigo-500/5"
+                            ? "bg-indigo-500/10 border-indigo-500/60 shadow-lg"
                             : "bg-slate-950/80 border-slate-900 hover:border-slate-800"
                         }`}
                       >
-                        <div className="flex items-start justify-between mb-1.5">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
+                        <div className="flex items-start justify-between mb-2">
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${
                             inc.status === "Active" 
                               ? "bg-red-500/10 text-red-400 border border-red-500/20" 
                               : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                           }`}>
                             {inc.reason}
                           </span>
-                          <span className="text-slate-500 text-[10px] font-mono">{inc.time}</span>
+                          <span className="text-slate-500 text-[9px] font-mono">{inc.time}</span>
                         </div>
                         <div className="font-mono text-xs text-white font-bold truncate">{inc.podName}</div>
-                        <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1.5">
+                        <div className="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1.5">
                           <span>Namespace: <strong className="text-slate-400">{inc.namespace}</strong></span>
                           <span>•</span>
                           <span>Restarts: <strong className="text-slate-400">{inc.restarts}</strong></span>
@@ -521,19 +522,19 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                   </div>
 
                   {/* Incident details panel - 7 cols */}
-                  <div className="xl:col-span-7 flex flex-col justify-between p-5 rounded-xl border border-slate-900 bg-slate-950/50">
+                  <div className="xl:col-span-7 flex flex-col justify-between p-5 rounded-xl border border-slate-900 bg-slate-950/40">
                     
                     {/* Upper Metadata */}
                     <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-900 mb-4">
+                      <div className="flex items-center justify-between pb-3.5 border-b border-slate-900 mb-4">
                         <div>
-                          <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider block">Inspecting Resource</span>
+                          <span className="text-[9px] text-slate-500 font-mono uppercase tracking-wider block">Pod Descriptor</span>
                           <span className="font-mono text-xs font-bold text-indigo-400">{selectedIncident.podName}</span>
                         </div>
                         <button 
                           onClick={runAiDiagnostics}
                           disabled={isAiRunning}
-                          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-extrabold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]"
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-extrabold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
                           {isAiRunning ? "Diagnosing..." : "Run AI Diagnostics"}
@@ -541,7 +542,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                       </div>
 
                       {/* Log Console */}
-                      <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider block mb-2">Container Console Logs</span>
+                      <span className="text-slate-500 text-[9px] font-bold uppercase tracking-wider block mb-2">Container Console Logs</span>
                       <div className="bg-slate-950 border border-slate-900 rounded-lg p-3.5 font-mono text-[10px] text-slate-400 h-36 overflow-y-auto space-y-1.5 custom-scrollbar">
                         {selectedIncident.logs.map((log, lIdx) => (
                           <div key={lIdx} className={log.includes("FATAL") || log.includes("failed") ? "text-red-400" : ""}>
@@ -552,10 +553,10 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
 
                       {/* Dynamic AI diagnosis screen */}
                       {(aiResultMap[selectedIncId] || isAiRunning) && (
-                        <div className="mt-4 p-4 rounded-lg bg-indigo-950/10 border border-indigo-500/20 text-left animate-float">
+                        <div className="mt-4 p-4 rounded-xl bg-indigo-950/10 border border-indigo-500/20 text-left animate-float">
                           <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1.5">
                             <Sparkles className="w-4.5 h-4.5" />
-                            <span>Srevox AI Root-Cause Diagnostic</span>
+                            <span>Srevox AI Diagnostics Result</span>
                           </div>
                           <p className="text-slate-300 text-xs leading-relaxed font-sans min-h-[40px]">
                             {aiResultMap[selectedIncId]}
@@ -565,7 +566,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                           {/* Code Diff representation */}
                           {aiResultMap[selectedIncId].length === selectedIncident.diagnosis.length && (
                             <div className="mt-3.5 space-y-2">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Suggested Manifest Patch:</span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Suggested Manifest Patch:</span>
                               <pre className="bg-slate-950 p-3 rounded-lg border border-slate-900 text-[10px] font-mono text-cyan-400 overflow-x-auto custom-scrollbar select-all">
                                 {selectedIncident.diff}
                               </pre>
@@ -576,9 +577,9 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                     </div>
 
                     {/* Dispatched Alerts summary */}
-                    <div className="pt-4 border-t border-slate-900 mt-4 flex items-center justify-between text-xs">
-                      <span className="text-slate-500 font-semibold">Alert Dispatch Status:</span>
-                      <div className="flex items-center gap-4">
+                    <div className="pt-4 border-t border-slate-900 mt-4 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-500 font-bold uppercase tracking-wider">Alert Delivery:</span>
+                      <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1 text-emerald-400 font-bold">
                           <Check className="w-3.5 h-3.5" /> Slack
                         </span>
@@ -586,7 +587,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                           <Check className="w-3.5 h-3.5" /> Email
                         </span>
                         <span className="flex items-center gap-1 text-slate-600">
-                          WhatsApp (cooldown)
+                          WhatsApp (Muted)
                         </span>
                       </div>
                     </div>
@@ -655,7 +656,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
               {/* CHANNELS VIEW */}
               {dashTab === "channels" && (
                 <div className="space-y-4 text-left">
-                  <span className="text-slate-500 text-[11px] font-bold uppercase tracking-wider block">Configured Alert Targets</span>
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest block">Active Webhook endpoints</span>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-slate-950/70 border border-indigo-500/20 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
@@ -687,7 +688,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
               {/* AI RULES CONFIG */}
               {dashTab === "ai" && (
                 <div className="space-y-4 text-left">
-                  <span className="text-slate-500 text-[11px] font-bold uppercase tracking-wider block">Rule Filtering Matrix</span>
+                  <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest block">Event Filter Rules</span>
                   <div className="space-y-3">
                     <div className="p-4 bg-slate-950/80 border border-slate-900 rounded-xl flex items-center justify-between">
                       <div>
@@ -722,29 +723,29 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
       </section>
 
       {/* SECTION: Notification Previews */}
-      <section id="channels" className="border-t border-slate-900 bg-slate-950/40 py-24 relative z-25">
+      <section id="channels" className="border-t border-slate-900/60 bg-slate-950/40 py-24 relative z-25">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">Structured Notifications</h2>
-            <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl mx-auto">
-              Srevox routes clean, structured notifications directly to your chat channels. Select a channel to view the formatting layout:
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Structured Notifications</h2>
+            <p className="text-slate-400 text-sm md:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
+              Srevox formats failure alerts with complete stack traces, exit codes, and AI-powered recommendations.
             </p>
 
             {/* Selector tabs */}
             <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-xl mx-auto">
               {[
-                { id: "slack", label: "Slack Chat", icon: MessageSquare },
+                { id: "slack", label: "Slack Channel", icon: MessageSquare },
                 { id: "teams", label: "Microsoft Teams", icon: Smartphone },
                 { id: "whatsapp", label: "WhatsApp Chat", icon: Smartphone },
-                { id: "email", label: "HTML Email", icon: Mail }
+                { id: "email", label: "HTML Email Alert", icon: Mail }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveChannel(tab.id as any)}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
+                  className={`px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
                     activeChannel === tab.id
                       ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/15"
-                      : "bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white"
+                      : "bg-[#050711] border-slate-800 text-slate-400 hover:text-white hover:border-slate-700"
                   }`}
                 >
                   <tab.icon className="w-3.5 h-3.5" />
@@ -877,7 +878,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                       *Status:* CrashLoopBackOff (6 restarts){"\n"}{"\n"}
                       *Diagnosis Overview:*{"\n"}
                       Container failed database connection. Environment configuration 'DB_HOST' is undefined.{"\n"}{"\n"}
-                      🔗 View Diagnostics: http://127.0.0.1:3000/login
+                      🔗 View Diagnostics: http://srevox.local/incidents
                     </p>
                     <span className="text-[9px] text-[#8696a0] absolute bottom-1 right-2">09:00 AM ✓✓</span>
                   </div>
@@ -955,9 +956,9 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
       {/* SECTION: Live Configurator Playground */}
       <section id="configurator" className="max-w-7xl mx-auto px-6 py-24 relative z-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white">Live Environment Builder</h2>
-          <p className="text-slate-400 text-sm md:text-base mt-2 max-w-2xl mx-auto">
-            Configure your self-hosted instance in real-time. Toggle parameters to customize the deployment configuration file (`.env`).
+          <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Configuration Playground</h2>
+          <p className="text-slate-400 text-sm md:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
+            Configure your self-hosted parameters dynamically below to output a customized `.env` configuration file immediately ready for launch.
           </p>
         </div>
 
@@ -969,7 +970,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
               
               {/* AI Diagnostic Options */}
               <div className="space-y-3.5">
-                <label className="text-xs font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
+                <label className="text-xs font-black uppercase text-indigo-400 tracking-widest flex items-center gap-2">
                   <Cpu className="w-4 h-4" />
                   <span>1. AI Diagnosis Engine</span>
                 </label>
@@ -983,7 +984,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                     <button
                       key={prov.id}
                       onClick={() => setAiProvider(prov.id as any)}
-                      className={`py-2 rounded-xl text-[10px] font-bold border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
+                      className={`py-2.5 rounded-xl text-[10px] font-bold border transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                         aiProvider === prov.id
                           ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20"
                           : "bg-slate-950/60 border-slate-900 text-slate-400 hover:text-white hover:border-slate-700"
@@ -996,12 +997,12 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
 
                 {/* Sub-inputs conditional */}
                 {aiProvider === "ollama" && (
-                  <div className="space-y-1 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900 animate-float-reverse">
-                    <span className="text-[10px] text-slate-500 block">Ollama Model Name</span>
+                  <div className="space-y-1.5 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900/60 animate-float-reverse">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Ollama Model Name</span>
                     <select 
                       value={ollamaModel} 
                       onChange={(e) => setOllamaModel(e.target.value)}
-                      className="w-full bg-[#070913] border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none"
+                      className="w-full bg-[#03050c] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                     >
                       <option value="llama3.1">llama3.1 (default)</option>
                       <option value="mistral">mistral</option>
@@ -1011,46 +1012,46 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                 )}
 
                 {aiProvider === "openai" && (
-                  <div className="space-y-3.5 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900">
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 block">OpenAI Model</span>
+                  <div className="space-y-3.5 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900/60">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">OpenAI Model</span>
                       <input 
                         type="text" 
                         value={openaiModel} 
                         onChange={(e) => setOpenaiModel(e.target.value)}
-                        className="w-full bg-[#070913] border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono"
+                        className="w-full bg-[#03050c] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 block">OpenAI API Key</span>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">OpenAI API Key</span>
                       <input 
                         type="password" 
                         value={openaiKey} 
                         onChange={(e) => setOpenaiKey(e.target.value)}
-                        className="w-full bg-[#070913] border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono"
+                        className="w-full bg-[#03050c] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                       />
                     </div>
                   </div>
                 )}
 
                 {aiProvider === "anthropic" && (
-                  <div className="space-y-3.5 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900">
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 block">Anthropic Model</span>
+                  <div className="space-y-3.5 bg-slate-950/80 p-3.5 rounded-xl border border-slate-900/60">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Anthropic Model</span>
                       <input 
                         type="text" 
                         value={anthropicModel} 
                         onChange={(e) => setAnthropicModel(e.target.value)}
-                        className="w-full bg-[#070913] border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono"
+                        className="w-full bg-[#03050c] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                       />
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-slate-500 block">Anthropic API Key</span>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Anthropic API Key</span>
                       <input 
                         type="password" 
                         value={anthropicKey} 
                         onChange={(e) => setAnthropicKey(e.target.value)}
-                        className="w-full bg-[#070913] border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono"
+                        className="w-full bg-[#03050c] border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                       />
                     </div>
                   </div>
@@ -1059,9 +1060,9 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
 
               {/* Notification Toggles */}
               <div className="space-y-4">
-                <label className="text-xs font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
+                <label className="text-xs font-black uppercase text-indigo-400 tracking-widest flex items-center gap-2">
                   <Bell className="w-4 h-4" />
-                  <span>2. Notification Routing</span>
+                  <span>2. Notification Channels</span>
                 </label>
 
                 {/* Slack Checkbox */}
@@ -1081,7 +1082,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                       value={slackWebhook}
                       onChange={(e) => setSlackWebhook(e.target.value)}
                       placeholder="https://hooks.slack.com/services/..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono animate-float-reverse"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono animate-float-reverse"
                     />
                   )}
                 </div>
@@ -1103,7 +1104,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                       value={smtpHost}
                       onChange={(e) => setSmtpHost(e.target.value)}
                       placeholder="SMTP Host Server (e.g. smtp.mailgun.org)"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono animate-float"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono animate-float"
                     />
                   )}
                 </div>
@@ -1125,7 +1126,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
                       value={waNumber}
                       onChange={(e) => setWaNumber(e.target.value)}
                       placeholder="To WhatsApp Number (e.g. +15550199)"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none font-mono animate-float-reverse"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono animate-float-reverse"
                     />
                   )}
                 </div>
@@ -1134,8 +1135,8 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             </div>
 
             {/* Config metadata footer */}
-            <div className="text-[10px] text-slate-500 leading-relaxed pt-4 border-t border-slate-900">
-              Save this environment structure directly into a file named <strong className="text-slate-300">.env</strong> in your Srevox installation folder.
+            <div className="text-[10px] text-slate-500 leading-relaxed pt-4 border-t border-slate-900 font-medium">
+              Write this customized configuration directly to your <strong className="text-slate-300">.env</strong> file inside the setup root.
             </div>
           </div>
 
@@ -1177,9 +1178,9 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
       <section className="py-24 border-t border-slate-900 bg-slate-950/10 relative z-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white">Full Platform Features</h2>
-            <p className="text-slate-400 text-sm md:text-base mt-2 max-w-xl mx-auto">
-              Srevox includes everything needed to track clusters natively and resolve infrastructure anomalies quickly.
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Technical Architecture Features</h2>
+            <p className="text-slate-400 text-sm md:text-base mt-3 max-w-xl mx-auto leading-relaxed">
+              Designed from scratch to support clean self-hosted deployments with zero metrics leaks and complete cluster isolation.
             </p>
           </div>
 
@@ -1187,44 +1188,44 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             {[
               {
                 icon: Zap,
-                title: "Near-Zero CPU Cost",
-                desc: "Uses lightweight HTTP chunked persistent streams to hook directly into the Kubernetes event socket. No resource-heavy indexing agents required.",
+                title: "Near-Zero CPU Footprint",
+                desc: "Hooks directly into the Kubernetes event stream via standard API watch sockets. Avoids polling, sidecars, or high resource database lookups.",
                 color: "from-blue-500/10 to-indigo-500/10 text-indigo-400 border-indigo-500/10 hover:border-indigo-500/25"
               },
               {
                 icon: Bell,
-                title: "Flexible Integrations",
-                desc: "Send error diagnostics to WhatsApp, Slack, Microsoft Teams, SMTP Email, or custom endpoints. Configured in seconds via simple webhooks.",
+                title: "Unified Notification Hub",
+                desc: "Integrate alert targets like Slack, Teams, WhatsApp, SMTP, and Custom Webhooks in seconds. Noise-controlled via smart cooldown thresholds.",
                 color: "from-purple-500/10 to-pink-500/10 text-purple-400 border-purple-500/10 hover:border-purple-500/25"
               },
               {
                 icon: Sparkles,
-                title: "AI Diagnostics Engine",
-                desc: "Query Srevox AI to interpret complex pod exit codes and trace issues directly to ConfigMaps, OOM boundaries, or network ports. Works with local Ollama too.",
+                title: "AI Diagnostics System",
+                desc: "Extract container logs and cluster status immediately to compute root-cause analysis and manifest solutions. Compatible with local Ollama.",
                 color: "from-amber-500/10 to-orange-500/10 text-amber-400 border-amber-500/10 hover:border-amber-500/25"
               },
               {
                 icon: Shield,
-                title: "Namespace Filters & Rules",
-                desc: "Isolate alerts. Avoid notification floods by filtering out unimportant warning namespaces (`kube-system`), warning levels, and setting cool-down rules.",
+                title: "Intelligent Event Rules",
+                desc: "Avoid alarm fatigue. Customize namespace rules, filter logs, ignore normal system cycles, and isolate notifications dynamically.",
                 color: "from-green-500/10 to-emerald-500/10 text-emerald-400 border-green-500/10 hover:border-green-500/25"
               },
               {
                 icon: Lock,
-                title: "Fully Air-Gapped",
-                desc: "Host it entirely on your physical machine or virtual cloud instances. Databases stay local; Srevox uses no trackers, call-homes, or usage logging.",
+                title: "Air-Gapped & Secure",
+                desc: "Srevox does not contact exterior servers. It functions completely offline within your private virtualization cluster, VPC, or bare-metal environment.",
                 color: "from-red-500/10 to-rose-500/10 text-rose-400 border-red-500/10 hover:border-red-500/25"
               },
               {
                 icon: Database,
-                title: "Infinite Incident History",
-                desc: "Store and search historical failure events locally in PostgreSQL. No billing limits, tier locks, or pricing packages based on usage metrics.",
+                title: "Local PostgreSQL History",
+                desc: "Keep records of cluster failure events without metric indexing fees. Historical logs are fully accessible and stored securely inside your LAN database.",
                 color: "from-cyan-500/10 to-sky-500/10 text-cyan-400 border-cyan-500/10 hover:border-cyan-500/25"
               }
             ].map((feat, i) => (
               <div 
                 key={i} 
-                className="group p-8 rounded-2xl border border-slate-900/60 bg-slate-950/20 hover:bg-slate-900/30 transition-all duration-300 hover:scale-[1.008] relative overflow-hidden"
+                className="group p-8 rounded-2xl border border-slate-900/60 bg-[#050711] hover:bg-[#070b18] hover:border-slate-800 transition-all duration-300 hover:scale-[1.008] relative overflow-hidden"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${feat.color} mb-6 border`}>
                   <feat.icon className="w-5 h-5" />
@@ -1244,12 +1245,12 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
       {/* SECTION: Deployment Walkthrough */}
       <section className="py-24 border-t border-slate-900/60 max-w-5xl mx-auto px-6 text-center relative z-20">
         <div className="mb-14">
-          <h2 className="text-3xl font-extrabold text-white">Three-Step Setup</h2>
-          <p className="text-slate-400 text-sm mt-2">Spin up the Srevox server stack on your machine in under 3 minutes.</p>
+          <h2 className="text-3xl font-extrabold text-white">Three-Step Deployment</h2>
+          <p className="text-slate-400 text-sm mt-2">Initialize Srevox on your physical VM or server in under 3 minutes.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="p-6 bg-slate-950/50 border border-slate-900 rounded-xl space-y-3.5">
+          <div className="p-6 bg-[#050711] border border-slate-900 rounded-xl space-y-3.5">
             <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 flex items-center justify-center text-xs font-black font-mono">1</div>
             <div className="text-sm font-bold text-white">Download Setup</div>
             <p className="text-slate-400 text-xs leading-relaxed">
@@ -1260,7 +1261,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             </pre>
           </div>
 
-          <div className="p-6 bg-slate-950/50 border border-slate-900 rounded-xl space-y-3.5">
+          <div className="p-6 bg-[#050711] border border-slate-900 rounded-xl space-y-3.5">
             <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 flex items-center justify-center text-xs font-black font-mono">2</div>
             <div className="text-sm font-bold text-white">Edit Variables</div>
             <p className="text-slate-400 text-xs leading-relaxed">
@@ -1271,7 +1272,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             </pre>
           </div>
 
-          <div className="p-6 bg-slate-950/50 border border-slate-900 rounded-xl space-y-3.5">
+          <div className="p-6 bg-[#050711] border border-slate-900 rounded-xl space-y-3.5">
             <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/25 text-indigo-400 flex items-center justify-center text-xs font-black font-mono">3</div>
             <div className="text-sm font-bold text-white">Launch Containers</div>
             <p className="text-slate-400 text-xs leading-relaxed">
@@ -1346,7 +1347,7 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             {/* Column 2: Product */}
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Product</h4>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm font-medium">
                 <li><a href="#demo" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Interactive Demo</a></li>
                 <li><a href="#channels" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Alert Channels</a></li>
                 <li><a href="#configurator" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Config Builder</a></li>
@@ -1357,9 +1358,10 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             {/* Column 3: Resources */}
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Resources</h4>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm font-medium">
                 <li><Link href="/docs" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Documentation</Link></li>
-                <li><a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">GitHub Repository</a></li>
+                <li><Link href="/feedback" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200 font-bold text-indigo-400">Submit Feedback</Link></li>
+                <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">GitHub Repository</a></li>
                 <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Deploy Configs</a></li>
                 <li><Link href="/docs" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Architecture</Link></li>
               </ul>
@@ -1368,17 +1370,17 @@ WHATSAPP_TO_NUMBER=${waNumber}`;
             {/* Column 4: Community */}
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Community</h4>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-2.5 text-sm font-medium">
                 <li><a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Discord Server</a></li>
                 <li><a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Twitter / X</a></li>
-                <li><a href="https://github.com/Akshatsainiaks/srevox/issues" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Issue Tracker</a></li>
+                <li><a href="https://github.com/Akshatsainiaks/srevox-setup/issues" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Issue Tracker</a></li>
                 <li><a href="mailto:support@srevox.local" className="text-slate-400 hover:text-indigo-400 transition-colors duration-200">Contact Us</a></li>
               </ul>
             </div>
           </div>
 
           {/* Bottom section */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
             <div>
               <span>© {new Date().getFullYear()} Srevox. All rights reserved.</span>
             </div>
