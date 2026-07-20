@@ -100,8 +100,8 @@ function CodeBlock({ code }: { code: string }) {
 }
 
 const NAV = [
-  { id: "intro", title: "Introduction", icon: BookOpen, items: [{ id: "what", title: "What is Srevox?" }, { id: "how", title: "How it works" }, { id: "arch", title: "Architecture" }, { id: "qs", title: "Quick start (5 min)" }] },
-  { id: "clusters", title: "Clusters", icon: Server, items: [{ id: "connect", title: "Connect a cluster" }, { id: "agent", title: "Agent installation" }, { id: "kubeconfig", title: "Kubeconfig method" }, { id: "rbac", title: "RBAC permissions" }] },
+  { id: "intro", title: "Introduction", icon: BookOpen, items: [{ id: "what", title: "What is Srevox?" }, { id: "how", title: "How it works" }, { id: "arch", title: "Architecture" }, { id: "qs", title: "Quick start (5 min)" }, { id: "docker-compose", title: "Docker Compose file" }] },
+  { id: "clusters", title: "Clusters", icon: Server, items: [{ id: "connect", title: "Connect a cluster" }, { id: "agent", title: "Agent installation" }, { id: "agent-yaml", title: "srevox-agent.yaml manifest" }, { id: "kubeconfig", title: "Kubeconfig method" }, { id: "rbac", title: "RBAC permissions" }] },
   { id: "channels", title: "Alert Channels", icon: Bell, items: [{ id: "email", title: "Email / Gmail" }, { id: "teams", title: "Microsoft Teams" }, { id: "whatsapp", title: "WhatsApp" }, { id: "webhook", title: "Webhook / Slack" }] },
   { id: "rules", title: "Alert Rules", icon: Shield, items: [{ id: "rule-create", title: "Creating rules" }, { id: "noise", title: "Noise control" }, { id: "reasons", title: "Crash reasons" }] },
   { id: "ai", title: "AI Diagnosis", icon: Zap, items: [{ id: "ai-overview", title: "Overview" }, { id: "ai-providers", title: "AI providers" }, { id: "ai-local", title: "Local / offline" }] },
@@ -160,20 +160,257 @@ function Content({ id }: { id: string }) {
       </div>
     </>),
     qs: (<>
-      <h1 className={h2}>Quick Start</h1>
-      <Callout type="info">For local source execution, ensure you have Node.js 18+, Python 3.10+, Go 1.21+, PostgreSQL 16, and Redis 7 active.</Callout>
-      {[
-        ["1. Spin up Backend API", "cd apps/api\nnpm install\nnpm run dev"],
-        ["2. Start Python AI Gateway", "cd apps/backend\npip install -r requirements.txt\nuvicorn ai_service:app --port 8000 --reload"],
-        ["3. Start Alert Worker Daemon", "cd apps/alert-worker\nnpm install\nnpm run dev"],
-        ["4. Spin up Dashboard Frontend", "cd apps/frontend\nnpm install\nnpm run dev"]
-      ].map(([t, c]) => (
-        <div key={String(t)} className="text-left">
-          <h3 className={h3}>{t}</h3>
-          <CodeBlock code={String(c)} />
+      <h1 className={h2}>Quick Start & Deployment</h1>
+      <Callout type="info">Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
+      <div className="text-left space-y-4">
+        <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
+        <CodeBlock code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
+        
+        <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
+        <CodeBlock code="docker compose up -d" />
+
+        <h3 className={h3}>Default Administrator Credentials</h3>
+        <div className="p-4 rounded-xl border border-slate-900 bg-slate-950 font-mono text-xs text-slate-300">
+          <div><strong className="text-indigo-400">Email:</strong> admin@srevox.local</div>
+          <div><strong className="text-indigo-400">Password:</strong> admin123</div>
         </div>
-      ))}
-      <Callout type="success">Default Administrator Credentials: admin@srevox.local / admin123</Callout>
+      </div>
+    </>),
+    "docker-compose": (<>
+      <h1 className={h2}>Production docker-compose.yml</h1>
+      <p className={p}>Use the full production manifest below to boot Srevox services: API, Frontend, Worker, AI Gateway, Activity service, PostgreSQL, and Redis.</p>
+      <CodeBlock code={`# ═══════════════════════════════════════════════════════════════
+#  Srevox — Self-Hosted
+#  https://github.com/Akshatsainiaks/srevox
+#
+#  Usage:
+#    curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash
+# ═══════════════════════════════════════════════════════════════
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: srevox-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
+      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-srevox}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - srevox
+
+  redis:
+    image: redis:7-alpine
+    container_name: srevox-redis
+    restart: unless-stopped
+    command: redis-server --bind 0.0.0.0 --protected-mode no
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - srevox
+
+  api:
+    image: akshatsaini08/srevox-api:v0.1.19
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: srevox-api
+    restart: unless-stopped
+    ports:
+      - "\${API_PORT:-4000}:4000"
+    env_file: .env
+    environment:
+      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
+      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
+      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+      REDIS_URL:     redis://redis:6379
+      AI_SERVICE_URL: http://ai:8000
+      ALERT_WORKER_URL: http://worker:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - srevox
+
+  worker:
+    image: akshatsaini08/srevox-worker:v0.1.19
+    build:
+      context: ./apps/alert-worker
+      dockerfile: Dockerfile
+    container_name: srevox-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
+      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
+      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+      REDIS_URL:     redis://redis:6379
+      AI_SERVICE_URL: http://ai:8000
+      ALERT_WORKER_URL: http://worker:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - srevox
+
+  ai:
+    image: akshatsaini08/srevox-ai:v0.1.19
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: srevox-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
+      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
+      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - srevox
+
+  activity:
+    image: akshatsaini08/srevox-activity:v0.1.19
+    build:
+      context: ./apps/activity-service
+      dockerfile: Dockerfile
+    container_name: srevox-activity
+    restart: unless-stopped
+    ports:
+      - "\${ACTIVITY_PORT:-5005}:5005"
+    env_file: .env
+    environment:
+      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
+      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
+      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - srevox
+
+  frontend:
+    image: akshatsaini08/srevox-frontend:v0.1.19
+    container_name: srevox-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      API_URL: http://api:4000
+      ACTIVITY_SERVICE_URL: http://activity:5005
+    depends_on:
+      - api
+      - activity
+    networks:
+      - srevox
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  srevox:
+    driver: bridge`}/>
+    </>),
+    "agent-yaml": (<>
+      <h1 className={h2}>Cluster Agent Deployment Manifest</h1>
+      <p className={p}>Deploy the srevox-agent daemon inside your Kubernetes cluster using the official manifest below.</p>
+      <CodeBlock code={`apiVersion: v1
+kind: Namespace
+metadata:
+  name: srevox-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: srevox-agent-sa
+  namespace: srevox-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: srevox-agent-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log", "nodes", "events", "namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: srevox-agent-binding
+subjects:
+- kind: ServiceAccount
+  name: srevox-agent-sa
+  namespace: srevox-system
+roleRef:
+  kind: ClusterRole
+  name: srevox-agent-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srevox-agent
+  namespace: srevox-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: srevox-agent
+  template:
+    metadata:
+      labels:
+        app: srevox-agent
+    spec:
+      serviceAccountName: srevox-agent-sa
+      containers:
+      - name: agent
+        image: srevox/agent:v0.1.19
+        env:
+        - name: SREVOX_API_URL
+          value: "http://YOUR_SREVOX_HOST:4000"
+        - name: CLUSTER_ID
+          value: "YOUR_CLUSTER_ID"
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi`}/>
     </>),
     agent: (<>
       <h1 className={h2}>Agent Installation</h1>
@@ -538,10 +775,12 @@ export default function DocsPage() {
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3 no-underline">
             <SrevoxLogo size={32} />
-            <div className="flex flex-col">
-              <span className="font-extrabold text-white text-lg tracking-tight leading-none">Srevox</span>
-              <span className="text-[9px] text-slate-500 mt-1 uppercase font-bold tracking-widest">Docs Console</span>
-            </div>
+            <span className="font-extrabold text-white text-lg tracking-tight leading-none flex items-center gap-2">
+              Srevox
+              <span className="px-2 py-0.5 text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-mono">
+                v0.1.19
+              </span>
+            </span>
           </Link>
         </div>
         
@@ -623,8 +862,8 @@ export default function DocsPage() {
             })}
           </div>
 
-          <div className="p-4 border-t border-slate-900/60 text-center text-[10px] text-slate-600 font-mono">
-            Srevox v1.0.0
+          <div className="p-4 border-t border-slate-900/60 text-center text-[10px] text-slate-500 font-mono">
+            Srevox v0.1.19
           </div>
         </aside>
 

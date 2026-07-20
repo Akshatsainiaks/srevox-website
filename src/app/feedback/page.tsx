@@ -100,10 +100,7 @@ export default function FeedbackPage() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3.5 hover:opacity-90 transition-all">
             <SrevoxLogo size={40} />
-            <div className="flex flex-col">
-              <span className="font-black text-white text-2xl tracking-tight leading-none">Srevox</span>
-              <span className="text-[9px] text-indigo-400 mt-1.5 uppercase font-bold tracking-widest">Self-Hosted Engine</span>
-            </div>
+            <span className="font-black text-white text-2xl tracking-tight leading-none">Srevox</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8 text-xs uppercase font-extrabold tracking-widest text-slate-400">
