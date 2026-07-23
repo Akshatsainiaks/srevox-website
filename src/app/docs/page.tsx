@@ -225,7 +225,7 @@ services:
       - srevox
 
   api:
-    image: akshatsaini08/srevox-api:v0.1.20
+    image: akshatsaini08/srevox-api:v0.1.21
     build:
       context: ./apps/api
       dockerfile: Dockerfile
@@ -252,7 +252,7 @@ services:
       - srevox
 
   worker:
-    image: akshatsaini08/srevox-worker:v0.1.20
+    image: akshatsaini08/srevox-worker:v0.1.21
     build:
       context: ./apps/alert-worker
       dockerfile: Dockerfile
@@ -277,7 +277,7 @@ services:
       - srevox
 
   ai:
-    image: akshatsaini08/srevox-ai:v0.1.20
+    image: akshatsaini08/srevox-ai:v0.1.21
     build:
       context: ./apps/backend
       dockerfile: Dockerfile
@@ -299,7 +299,7 @@ services:
       - srevox
 
   activity:
-    image: akshatsaini08/srevox-activity:v0.1.20
+    image: akshatsaini08/srevox-activity:v0.1.21
     build:
       context: ./apps/activity-service
       dockerfile: Dockerfile
@@ -321,7 +321,7 @@ services:
       - srevox
 
   frontend:
-    image: akshatsaini08/srevox-frontend:v0.1.20
+    image: akshatsaini08/srevox-frontend:v0.1.21
     container_name: srevox-frontend
     restart: unless-stopped
     ports:
@@ -398,7 +398,7 @@ spec:
       serviceAccountName: srevox-agent-sa
       containers:
       - name: agent
-        image: srevox/agent:v0.1.20
+        image: srevox/agent:v0.1.21
         env:
         - name: SREVOX_API_URL
           value: "http://YOUR_SREVOX_HOST:4000"
@@ -778,7 +778,7 @@ export default function DocsPage() {
             <span className="font-extrabold text-white text-lg tracking-tight leading-none flex items-center gap-2">
               Srevox
               <span className="px-2 py-0.5 text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-mono">
-                v0.1.20
+                v0.1.21
               </span>
             </span>
           </Link>
@@ -863,7 +863,7 @@ export default function DocsPage() {
           </div>
 
           <div className="p-4 border-t border-slate-900/60 text-center text-[10px] text-slate-500 font-mono">
-            Srevox v0.1.20
+            Srevox v0.1.21
           </div>
         </aside>
 
