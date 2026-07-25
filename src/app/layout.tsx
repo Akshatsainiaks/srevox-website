@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -66,16 +67,47 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jakarta.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${jakarta.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <Script
+          id="srevox-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var isDocs = window.location.pathname.startsWith('/docs');
+                  var key = isDocs ? 'srevox_docs_theme' : 'srevox_main_theme';
+                  var saved = localStorage.getItem(key) || 'dark';
+                  var resolved = saved;
+                  if (saved === 'system') {
+                    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  if (resolved === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    document.documentElement.style.backgroundColor = '#f8fafc';
+                    document.documentElement.style.colorScheme = 'light';
+                  } else {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.style.backgroundColor = '#070913';
+                    document.documentElement.style.colorScheme = 'dark';
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#070913] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+      <body className="min-h-full flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
         {children}
       </body>
     </html>

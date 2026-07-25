@@ -1,8 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import { DockerPullsBadge } from "@/components/DockerPullsBadge";
+import { useSrevoxTheme } from "@/components/ThemeProvider";
 import { 
   BookOpen, ChevronRight, Search, Server, Bell, Shield, 
-  Terminal, Code, Menu, X, Zap, Info, CheckCircle, AlertTriangle, Sparkles, ArrowLeft, MessageSquare
+  Terminal, Code, Menu, X, Zap, Info, CheckCircle, AlertTriangle, Sparkles, ArrowLeft, MessageSquare,
+  Sun, Moon, Eye, AlignLeft
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,28 +37,28 @@ function SrevoxLogo({ size = 32, className = "" }: { size?: number; className?: 
   );
 }
 
-// Custom Callout Box Component
-function Callout({ type, children }: { type: "info" | "warning" | "success" | "tip"; children: React.ReactNode }) {
+// Custom Callout Box Component (Light/Dark Mode Aware)
+function Callout({ type, isLight = false, children }: { type: "info" | "warning" | "success" | "tip"; isLight?: boolean; children: React.ReactNode }) {
   const styles = {
     info: {
-      border: "border-blue-500/20 bg-blue-500/5 text-blue-300",
+      border: isLight ? "border-blue-200 bg-blue-50 text-blue-900" : "border-blue-500/20 bg-blue-500/5 text-blue-300",
       icon: Info,
-      iconColor: "text-blue-400"
+      iconColor: isLight ? "text-blue-600" : "text-blue-400"
     },
     warning: {
-      border: "border-amber-500/20 bg-amber-500/5 text-amber-300",
+      border: isLight ? "border-amber-200 bg-amber-50 text-amber-900" : "border-amber-500/20 bg-amber-500/5 text-amber-300",
       icon: AlertTriangle,
-      iconColor: "text-amber-400"
+      iconColor: isLight ? "text-amber-600" : "text-amber-400"
     },
     success: {
-      border: "border-emerald-500/20 bg-emerald-500/5 text-emerald-300",
+      border: isLight ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-emerald-500/20 bg-emerald-500/5 text-emerald-300",
       icon: CheckCircle,
-      iconColor: "text-emerald-400"
+      iconColor: isLight ? "text-emerald-600" : "text-emerald-400"
     },
     tip: {
-      border: "border-purple-500/20 bg-purple-500/5 text-purple-300",
+      border: isLight ? "border-purple-200 bg-purple-50 text-purple-900" : "border-purple-500/20 bg-purple-500/5 text-purple-300",
       icon: Sparkles,
-      iconColor: "text-purple-400"
+      iconColor: isLight ? "text-purple-600" : "text-purple-400"
     }
   }[type];
 
@@ -70,7 +73,7 @@ function Callout({ type, children }: { type: "info" | "warning" | "success" | "t
 }
 
 // Custom Code Terminal Box Component
-function CodeBlock({ code }: { code: string }) {
+function CodeBlock({ code, isLight = false }: { code: string; isLight?: boolean }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
     try {
@@ -80,19 +83,21 @@ function CodeBlock({ code }: { code: string }) {
     } catch {}
   };
   return (
-    <div className="relative rounded-xl overflow-hidden border border-slate-900 bg-slate-950/80 my-5 font-mono scan-line">
-      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-900/60 bg-slate-950/50">
+    <div className={`relative rounded-xl overflow-hidden my-5 font-mono border ${
+      isLight ? "border-slate-300 bg-slate-900 text-slate-100" : "border-slate-900 bg-slate-950/80"
+    }`}>
+      <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-800 bg-slate-950/60">
         <div className="w-2.5 h-2.5 rounded-full bg-rose-500/70" />
         <div className="w-2.5 h-2.5 rounded-full bg-amber-500/70" />
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/70" />
         <button 
           onClick={handleCopy}
-          className="ml-auto text-[10px] font-bold text-slate-500 hover:text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] px-2 py-0.5 rounded border border-slate-800 bg-slate-900/40 cursor-pointer"
+          className="ml-auto text-[10px] font-bold text-slate-400 hover:text-white transition-all px-2 py-0.5 rounded border border-slate-700 bg-slate-800/60 cursor-pointer"
         >
           {copied ? "Copied!" : "Copy"}
         </button>
       </div>
-      <pre className="p-4 text-xs md:text-sm text-cyan-400/90 overflow-x-auto leading-relaxed custom-scrollbar whitespace-pre-wrap select-all">
+      <pre className="p-4 text-xs md:text-sm text-cyan-400 overflow-x-auto leading-relaxed custom-scrollbar whitespace-pre-wrap select-all">
         {code}
       </pre>
     </div>
@@ -109,254 +114,139 @@ const NAV = [
   { id: "k8s", title: "Testing & K8s", icon: Terminal, items: [{ id: "k8s-redis", title: "Test via Redis" }, { id: "k8s-crash", title: "Simulate pod crash" }, { id: "k8s-watcher", title: "Run Go watcher" }, { id: "k8s-full", title: "Full cluster setup" }] },
 ];
 
-function Content({ id }: { id: string }) {
-  const p = "text-sm text-slate-400 leading-7 mb-4 text-left";
-  const h2 = "text-2xl md:text-3xl font-black text-white tracking-tight mb-5 text-left border-b border-slate-900 pb-3";
-  const h3 = "text-base font-bold text-slate-200 mt-8 mb-3 text-left flex items-center gap-2";
+const ALL_TOC_ITEMS = NAV.flatMap(s => s.items);
 
-  const map: Record<string, React.ReactNode> = {
-    what: (<>
-      <h1 className={h2}>What is Srevox?</h1>
-      <p className={p}>Srevox is a self-hosted, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
-      <Callout type="tip">SRE + VOX — The voice of your site reliability. Srevox operates completely inside your secure network with local databases.</Callout>
-      <h3 className={h3}>Key Features</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-        {[
-          ["⚡", "Instant Detection", "Sub-5 second alerting via persistent K8s Watch API streams."],
-          ["🔔", "Multi-channel Alerts", "Structured payloads sent to Email (SMTP), Teams, Slack, and WhatsApp."],
-          ["🤖", "AI Diagnostics", "On-demand error diagnostics and YAML config patches using Groq, OpenAI, or Ollama."],
-          ["🛡️", "Noise Filtering", "Cooldown block timers, namespace exclusions, and minimum crash count threshold filters."],
-          ["☁️", "Universal Watching", "Works with EKS, GKE, AKS, bare-metal clusters, or local minikube nodes."],
-          ["🔒", "100% Private", "No remote databases, usage tracking, telemetry, or external cloud storage dependencies."]
-        ].map(([e, t, dd]) => (
-          <div key={String(t)} className="flex gap-3.5 p-4 rounded-xl border border-slate-900 bg-slate-950/40 text-left">
-            <span className="text-xl shrink-0">{e}</span>
-            <div>
-              <div className="font-extrabold text-sm text-white">{t}</div>
-              <div className="text-xs text-slate-500 mt-1">{dd}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>),
-    how: (<>
-      <h1 className={h2}>How It Works</h1>
-      <p className={p}>Srevox interfaces directly with the Kubernetes API server using a persistent connection. The cluster agent pushes event streams the moment they register.</p>
-      <div className="space-y-4 my-6 text-left">
-        {[
-          ["1", "Go Watcher Connects", "The srevox-agent establishes a persistent Watch socket on the Kubernetes Pod API, listening for container restarts."],
-          ["2", "Event Dispatched to Redis", "Upon detecting OOMKilled or CrashLoopBackOff states, the agent serializes a JSON payload and publishes it to Redis."],
-          ["3", "Alert Worker Processes", "A lightweight alert daemon listens to Redis, filters out warning namespaces, validates cooldowns, and executes notifications."],
-          ["4", "Diagnostics Stored", "Incidents are cataloged in Postgres. Administrators can examine logs, run AI analysis, or mark them resolved."]
-        ].map(([n, t, dd]) => (
-          <div key={n} className="flex gap-4 p-4 rounded-xl border border-slate-900 bg-slate-950/20">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">{n}</div>
-            <div>
-              <div className="font-extrabold text-sm text-white">{t}</div>
-              <div className="text-xs text-slate-500 mt-1">{dd}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>),
-    qs: (<>
-      <h1 className={h2}>Quick Start & Deployment</h1>
-      <Callout type="info">Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
-      <div className="text-left space-y-4">
-        <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
-        <CodeBlock code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
-        
-        <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
-        <CodeBlock code="docker compose up -d" />
+// Full Continuous Documentation Render Component with 27 Anchors
+function FullScrollableDoc({ isLight }: { isLight: boolean }) {
+  const p = `text-sm leading-7 mb-4 text-left font-normal ${isLight ? "text-slate-700" : "text-slate-400"}`;
+  const h2 = `text-2xl md:text-3xl font-black tracking-tight mb-5 text-left pb-3 border-b ${isLight ? "text-slate-900 border-slate-200" : "text-white border-slate-900"}`;
+  const h3 = `text-base font-bold mt-8 mb-3 text-left flex items-center gap-2 ${isLight ? "text-slate-800" : "text-slate-200"}`;
+  const cardBg = isLight ? "bg-white border-slate-200 text-slate-800 shadow-sm" : "bg-slate-950/40 border-slate-900 text-slate-200";
 
-        <h3 className={h3}>Default Administrator Credentials</h3>
-        <div className="p-4 rounded-xl border border-slate-900 bg-slate-950 font-mono text-xs text-slate-300">
-          <div><strong className="text-indigo-400">Email:</strong> admin@srevox.local</div>
-          <div><strong className="text-indigo-400">Password:</strong> admin123</div>
+  return (
+    <div className="space-y-16">
+      
+      {/* 1. What is Srevox */}
+      <section id="what" className="scroll-mt-28">
+        <h1 className={h2}>What is Srevox?</h1>
+        <p className={p}>Srevox is a self-hosted, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
+        <Callout type="tip" isLight={isLight}>SRE + VOX — The voice of your site reliability. Srevox operates completely inside your secure network with local databases.</Callout>
+        <h3 className={h3}>Key Features</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
+          {[
+            ["⚡", "Instant Detection", "Sub-5 second alerting via persistent K8s Watch API streams."],
+            ["🔔", "Multi-channel Alerts", "Structured payloads sent to Email (SMTP), Teams, Slack, and WhatsApp."],
+            ["🤖", "AI Diagnostics", "On-demand error diagnostics and YAML config patches using Groq, OpenAI, or Ollama."],
+            ["🛡️", "Noise Filtering", "Cooldown block timers, namespace exclusions, and minimum crash count threshold filters."],
+            ["☁️", "Universal Watching", "Works with EKS, GKE, AKS, bare-metal clusters, or local minikube nodes."],
+            ["🔒", "100% Private", "No remote databases, usage tracking, telemetry, or external cloud storage dependencies."]
+          ].map(([e, t, dd]) => (
+            <div key={String(t)} className={`flex gap-3.5 p-4 rounded-xl border ${cardBg}`}>
+              <span className="text-xl shrink-0">{e}</span>
+              <div>
+                <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
+                <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    </>),
-    "docker-compose": (<>
-      <h1 className={h2}>Production docker-compose.yml</h1>
-      <p className={p}>Use the full production manifest below to boot Srevox services: API, Frontend, Worker, AI Gateway, Activity service, PostgreSQL, and Redis.</p>
-      <CodeBlock code={`# ═══════════════════════════════════════════════════════════════
-#  Srevox — Self-Hosted
-#  https://github.com/Akshatsainiaks/srevox
-#
-#  Usage:
-#    curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash
-# ═══════════════════════════════════════════════════════════════
+      </section>
 
-services:
+      {/* 2. How it works */}
+      <section id="how" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>How It Works</h1>
+        <p className={p}>Srevox interfaces directly with the Kubernetes API server using a persistent connection. The cluster agent pushes event streams the moment they register.</p>
+        <div className="space-y-4 my-6 text-left">
+          {[
+            ["1", "Go Watcher Connects", "The srevox-agent establishes a persistent Watch socket on the Kubernetes Pod API, listening for container restarts."],
+            ["2", "Event Dispatched to Redis", "Upon detecting OOMKilled or CrashLoopBackOff states, the agent serializes a JSON payload and publishes it to Redis."],
+            ["3", "Alert Worker Processes", "A lightweight alert daemon listens to Redis, filters out warning namespaces, validates cooldowns, and executes notifications."],
+            ["4", "Diagnostics Stored", "Incidents are cataloged in Postgres. Administrators can examine logs, run AI analysis, or mark them resolved."]
+          ].map(([n, t, dd]) => (
+            <div key={n} className={`flex gap-4 p-4 rounded-xl border ${cardBg}`}>
+              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center text-sm font-bold shrink-0">{n}</div>
+              <div>
+                <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
+                <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
+      {/* 3. Architecture */}
+      <section id="arch" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Architecture Overview</h1>
+        <p className={p}>Srevox uses a decoupled microservices architecture designed for ultra-low memory footprint and high resilience in production environments.</p>
+        <Callout type="info" isLight={isLight}>All services communicate locally over internal Docker/Kubernetes bridge networks.</Callout>
+      </section>
+
+      {/* 4. Quick start */}
+      <section id="qs" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Quick Start & Deployment</h1>
+        <Callout type="info" isLight={isLight}>Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
+        <div className="text-left space-y-4">
+          <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
+          <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
+          
+          <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
+          <CodeBlock isLight={isLight} code="docker compose up -d" />
+
+          <h3 className={h3}>Default Administrator Credentials</h3>
+          <div className={`p-4 rounded-xl border font-mono text-xs ${cardBg}`}>
+            <div><strong className="text-indigo-500">Email:</strong> admin@srevox.local</div>
+            <div><strong className="text-indigo-500">Password:</strong> admin123</div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Docker Compose */}
+      <section id="docker-compose" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Production docker-compose.yml</h1>
+        <p className={p}>Use the full production manifest below to boot Srevox services: API, Frontend, Worker, AI Gateway, Activity service, PostgreSQL, and Redis.</p>
+        <CodeBlock isLight={isLight} code={`services:
   postgres:
     image: postgres:16-alpine
-    container_name: srevox-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
-      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
+      POSTGRES_DB: srevox
+      POSTGRES_USER: srevox
       POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \${POSTGRES_USER:-srevox}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - srevox
-
   redis:
     image: redis:7-alpine
-    container_name: srevox-redis
     restart: unless-stopped
-    command: redis-server --bind 0.0.0.0 --protected-mode no
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - srevox
-
   api:
-    image: akshatsaini08/srevox-api:v0.1.21
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: srevox-api
-    restart: unless-stopped
+    image: akshatsaini08/srevox-api:v0.1.23
     ports:
-      - "\${API_PORT:-4000}:4000"
-    env_file: .env
-    environment:
-      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
-      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
-      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-      REDIS_URL:     redis://redis:6379
-      AI_SERVICE_URL: http://ai:8000
-      ALERT_WORKER_URL: http://worker:3001
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - srevox
-
-  worker:
-    image: akshatsaini08/srevox-worker:v0.1.21
-    build:
-      context: ./apps/alert-worker
-      dockerfile: Dockerfile
-    container_name: srevox-worker
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
-      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
-      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-      REDIS_URL:     redis://redis:6379
-      AI_SERVICE_URL: http://ai:8000
-      ALERT_WORKER_URL: http://worker:3001
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - srevox
-
-  ai:
-    image: akshatsaini08/srevox-ai:v0.1.21
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-    container_name: srevox-ai
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
-    env_file: .env
-    environment:
-      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
-      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
-      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - srevox
-
-  activity:
-    image: akshatsaini08/srevox-activity:v0.1.21
-    build:
-      context: ./apps/activity-service
-      dockerfile: Dockerfile
-    container_name: srevox-activity
-    restart: unless-stopped
-    ports:
-      - "\${ACTIVITY_PORT:-5005}:5005"
-    env_file: .env
-    environment:
-      POSTGRES_HOST:     \${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT:     \${POSTGRES_PORT:-5432}
-      POSTGRES_DB:       \${POSTGRES_DB:-srevox}
-      POSTGRES_USER:     \${POSTGRES_USER:-srevox}
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - srevox
-
+      - "4000:4000"
   frontend:
-    image: akshatsaini08/srevox-frontend:v0.1.21
-    container_name: srevox-frontend
-    restart: unless-stopped
+    image: akshatsaini08/srevox-frontend:v0.1.23
     ports:
-      - "3000:3000"
-    env_file: .env
-    environment:
-      API_URL: http://api:4000
-      ACTIVITY_SERVICE_URL: http://activity:5005
-    depends_on:
-      - api
-      - activity
-    networks:
-      - srevox
+      - "3000:3000"`} />
+      </section>
 
-volumes:
-  postgres_data:
-  redis_data:
+      {/* 6. Connect a Cluster */}
+      <section id="connect" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Connecting a Kubernetes Cluster</h1>
+        <p className={p}>Srevox supports two primary methods for cluster integration: direct Service Account API Token connection (Agentless) or in-cluster Watcher Daemon (Agent).</p>
+      </section>
 
-networks:
-  srevox:
-    driver: bridge`}/>
-    </>),
-    "agent-yaml": (<>
-      <h1 className={h2}>Cluster Agent Deployment Manifest</h1>
-      <p className={p}>Deploy the srevox-agent daemon inside your Kubernetes cluster using the official manifest below.</p>
-      <CodeBlock code={`apiVersion: v1
-kind: Namespace
-metadata:
-  name: srevox-system
----
-apiVersion: v1
+      {/* 7. Agent Installation */}
+      <section id="agent" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Agent Installation</h1>
+        <p className={p}>Deploy the srevox-agent binary or container inside your cluster to monitor pod status events outbound.</p>
+        <CodeBlock isLight={isLight} code="kubectl apply -f https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/srevox-agent.yaml" />
+      </section>
+
+      {/* 8. srevox-agent.yaml Manifest */}
+      <section id="agent-yaml" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>srevox-agent.yaml Manifest</h1>
+        <p className={p}>Full Kubernetes ServiceAccount, ClusterRole, ClusterRoleBinding, and Deployment manifest for cluster watching.</p>
+        <CodeBlock isLight={isLight} code={`apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: srevox-agent-sa
-  namespace: srevox-system
+  name: srevox-agent
+  namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -364,390 +254,186 @@ metadata:
   name: srevox-agent-role
 rules:
 - apiGroups: [""]
-  resources: ["pods", "pods/log", "nodes", "events", "namespaces"]
-  verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: srevox-agent-binding
-subjects:
-- kind: ServiceAccount
-  name: srevox-agent-sa
-  namespace: srevox-system
-roleRef:
-  kind: ClusterRole
-  name: srevox-agent-role
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: srevox-agent
-  namespace: srevox-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: srevox-agent
-  template:
-    metadata:
-      labels:
-        app: srevox-agent
-    spec:
-      serviceAccountName: srevox-agent-sa
-      containers:
-      - name: agent
-        image: srevox/agent:v0.1.21
-        env:
-        - name: SREVOX_API_URL
-          value: "http://YOUR_SREVOX_HOST:4000"
-        - name: CLUSTER_ID
-          value: "YOUR_CLUSTER_ID"
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi`}/>
-    </>),
-    agent: (<>
-      <h1 className={h2}>Agent Installation</h1>
-      <p className={p}>The Srevox agent is deployed as a single replica pod. It establishes an outbound socket to Redis — keeping ingress rules closed.</p>
-      <CodeBlock code={`kubectl apply -f - <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: srevox-agent
-  namespace: kube-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels: { app: srevox-agent }
-  template:
-    metadata:
-      labels: { app: srevox-agent }
-    spec:
-      containers:
-      - name: agent
-        image: srevox/agent:latest
-        env:
-        - name: REDIS_URL
-          value: "redis://YOUR_REDIS_IP:6379"
-        - name: CLUSTER_ID
-          value: "YOUR_CLUSTER_UUID"
-        resources:
-          requests: { cpu: 5m, memory: 16Mi }
-          limits:   { cpu: 50m, memory: 64Mi }
-EOF`}/>
-    </>),
-    email: (<>
-      <h1 className={h2}>Email / SMTP Setup</h1>
-      <p className={p}>Send structured incident reports directly to your on-call inbox using custom mail relay hosts.</p>
-      <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden my-4 text-left">
-        <table className="w-full text-xs font-mono">
-          <thead>
-            <tr className="border-b border-slate-900 bg-slate-950/80 text-slate-500 text-left">
-              <th className="px-4 py-3 font-bold uppercase tracking-wider">Field</th>
-              <th className="px-4 py-3 font-bold uppercase tracking-wider">Sample Value</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-900/60">
-            {[
-              ["smtp_host", "smtp.gmail.com"],
-              ["smtp_port", "587 (TLS)"],
-              ["smtp_user", "operations@yourdomain.com"],
-              ["smtp_pass", "16-char App Password key"],
-              ["to", "oncall@yourdomain.com"]
-            ].map(([k, v]) => (
-              <tr key={k}>
-                <td className="px-4 py-3 text-indigo-400 font-bold">{k}</td>
-                <td className="px-4 py-3 text-slate-400">{v}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <Callout type="info">Gmail: Navigate to Google Account Security → 2-Step Verification → App Passwords. Select "Other", type "Srevox", and copy the 16-character code.</Callout>
-    </>),
-    arch: (<>
-      <h1 className={h2}>Platform Architecture</h1>
-      <p className={p}>Srevox consists of 5 modular services communicating securely over local loops:</p>
-      <div className="space-y-4 my-4 text-left">
-        {[
-          ["Go Watch Agent", "Monitors the Kubernetes API stream inside the target cluster. Sends lightweight JSON logs to Redis."],
-          ["Redis Queue Broker", "Handles message buffering. Acts as the queue channel (srevox:crashes) between watchers and the alerting daemon."],
-          ["Alert Worker Node", "Subscribes to Redis, evaluates cooldown periods and alert criteria rules, and fires notifications."],
-          ["Fastify Web API", "Powers the dashboard backend, handles database lookups, credentials validation, and cluster mapping."],
-          ["Next.js Frontend Client", "Translates cluster metrics, log streams, settings, and rule filters into a dark dashboard UI."]
-        ].map(([t, d2]) => (
-          <div key={String(t)} className="p-4 rounded-xl border border-slate-900 bg-slate-950/20">
-            <div className="font-extrabold text-sm text-indigo-400 mb-1">{t}</div>
-            <div className="text-xs text-slate-400">{d2}</div>
-          </div>
-        ))}
-      </div>
-    </>),
-    connect: (<>
-      <h1 className={h2}>Connect a Cluster</h1>
-      <p className={p}>Srevox supports two cluster monitoring modes: Agent-based (recommended for production) and direct Kubeconfig polling.</p>
-      <h3 className={h3}>1. Agent Method (Recommended)</h3>
-      <p className={p}>From Srevox Dashboard → Clusters → Add Cluster → choose "Agent" and copy the UUID. Next, install the agent deployment inside your cluster:</p>
-      <CodeBlock code={`kubectl apply -f https://raw.githubusercontent.com/Akshatsainiaks/srevox-setup/main/srevox-agent.yml
+  resources: ["pods", "pods/log", "events", "nodes"]
+  verbs: ["get", "list", "watch"]`} />
+      </section>
 
-kubectl set env deployment/srevox-agent -n kube-system \\
-  REDIS_URL=redis://YOUR_SREVOX_IP:6379 \\
-  CLUSTER_ID=YOUR_CLUSTER_UUID \\
-  CLUSTER_NAME=production`}/>
-      <h3 className={h3}>2. Kubeconfig Method (Alternative)</h3>
-      <p className={p}>Paste your credentials directory file text content directly in the cluster add panel. The Srevox server runs watcher subprocesses locally on your host.</p>
-      <Callout type="warning">The Kubeconfig method stores raw credentials on the Srevox server. Use the Agent deployment method for better security isolation.</Callout>
-    </>),
-    kubeconfig: (<>
-      <h1 className={h2}>Kubeconfig Connection</h1>
-      <p className={p}>Use the kubeconfig option to monitor external clusters without deploying workloads inside them.</p>
-      <CodeBlock code={`# Dump local kubernetes credentials
-cat ~/.kube/config
+      {/* 9. Kubeconfig Method */}
+      <section id="kubeconfig" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Kubeconfig Connection Method</h1>
+        <p className={p}>For remote EKS or GKE clusters, upload a sanitized Kubeconfig YAML file directly in the Clusters settings menu.</p>
+      </section>
 
-# Or for minified cluster contexts
-kubectl config view --minify --raw`}/>
-    </>),
-    rbac: (
-      <>
-        <h1 className={h2}>RBAC Cluster Permissions</h1>
-        <p className={p}>The Go agent requires read-only permissions to watch pod streams, events, deployments, and cronjobs inside your cluster.</p>
-        
-        <h3 className={h3}>Apply Permissions Manifest</h3>
-        <p className={p}>Run the following command to deploy the ServiceAccount, ClusterRole, and ClusterRoleBinding resources:</p>
-        <CodeBlock code={`kubectl apply -f - <<EOF
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: srevox-agent
-rules:
-  - apiGroups: [""]
-    resources: ["pods", "nodes", "namespaces", "services", "endpoints", "persistentvolumes", "persistentvolumeclaims", "events"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["networking.k8s.io"]
-    resources: ["ingresses"]
-    verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: srevox-agent
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: srevox-agent
-subjects:
-  - kind: ServiceAccount
-    name: srevox-agent
-    namespace: kube-system
-EOF`} />
-        
-        <h3 className={h3}>Restart Agent Deployment</h3>
-        <CodeBlock code={`kubectl rollout restart deployment/srevox-agent -n kube-system`} />
-      </>
-    ),
-    teams: (<>
-      <h1 className={h2}>Microsoft Teams Setup</h1>
-      <p className={p}>Route crash notification adaptive cards directly to a Teams channel.</p>
-      <h3 className={h3}>Setup Steps</h3>
-      <p className={p}>1. In Teams, go to your target channel → click ... (Options) → select "Connectors" or "Incoming Webhook" and compile details.</p>
-      <p className={p}>2. Name the integration "Srevox" and copy the webhook URL.</p>
-      <p className={p}>3. Inside Srevox Dashboard → Channels → Add → Microsoft Teams, paste the URL.</p>
-      <CodeBlock code={`webhook_url: https://your-org.webhook.office.com/webhookb2/...`}/>
-    </>),
-    whatsapp: (<>
-      <h1 className={h2}>WhatsApp / Twilio</h1>
-      <p className={p}>Configure real-time message notifications for high-priority outages via WhatsApp.</p>
-      <h3 className={h3}>Configuration Parameter template</h3>
-      <CodeBlock code={`account_sid: ACxxxxxxxxxxxxxxxxxxxxxxxx
-auth_token:  your_twilio_auth_token_here
-from:        whatsapp:+14155238886 (Twilio Sandbox number)
-to:          whatsapp:+your_mobile_number`}/>
-    </>),
-    webhook: (<>
-      <h1 className={h2}>Generic Webhook / Slack</h1>
-      <p className={p}>Send JSON notifications to any target HTTP endpoint, including custom monitoring pipelines.</p>
-      <h3 className={h3}>Slack Webhook Setup</h3>
-      <p className={p}>Create an app on api.slack.com, enable "Incoming Webhooks", authorize it for your channel, and paste the webhook URL in Srevox Channel Settings.</p>
-      <h3 className={h3}>Payload Format Schema</h3>
-      <CodeBlock code={`{
-  "pod_name": "payment-gateway-78xbd",
-  "namespace": "billing",
-  "crash_reason": "OOMKilled",
-  "restart_count": 4,
-  "severity": "critical",
-  "incident_id": "uuid-v4-token-key",
-  "cluster_name": "production-gke-01",
-  "detected_at": "2026-06-20T10:00:00Z"
-}`}/>
-    </>),
-    "rule-create": (<>
-      <h1 className={h2}>Creating Alert Rules</h1>
-      <p className={p}>Configure criteria thresholds that determine when a pod failure routes notification alerts.</p>
-      <h3 className={h3}>Fields Mapping</h3>
-      <div className="rounded-xl border border-slate-900 bg-slate-950/40 overflow-hidden my-4 text-left">
-        <table className="w-full text-xs font-mono">
-          <thead>
-            <tr className="border-b border-slate-900 bg-slate-950/80 text-slate-500 text-left">
-              <th className="px-4 py-3 font-bold uppercase tracking-wider">Field</th>
-              <th className="px-4 py-3 font-bold uppercase tracking-wider">Description</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-900/60">
-            {[
-              ["Cluster", "Target Kubernetes cluster context to watch."],
-              ["Namespaces", "Define comma-separated scopes, or leave empty for all."],
-              ["Reasons", "Select CrashLoopBackOff, OOMKilled, etc."],
-              ["Min Restarts", "Filter transient crashes (e.g., alert after 3 restarts)."],
-              ["Cooldown", "Ignore repeating identical alerts for X minutes."]
-            ].map(([k, v]) => (
-              <tr key={k}>
-                <td className="px-4 py-3 text-indigo-400 font-bold">{k}</td>
-                <td className="px-4 py-3 text-slate-400">{v}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>),
-    noise: (<>
-      <h1 className={h2}>Noise Control Filters</h1>
-      <p className={p}>Prevent alert fatigue. Fine-tune your rules with cooldown periods, namespace exclusions, and crash count thresholds to avoid alerting on temporary startups.</p>
-    </>),
-    reasons: (<>
-      <h1 className={h2}>Crash Reasons Matrix</h1>
-      <p className={p}>Srevox captures these pod failures from the Kubernetes event stream:</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 my-4 text-left">
-        {[
-          "CrashLoopBackOff", "OOMKilled", "Error", "BackOff", "Failed", "FailedMount",
-          "FailedScheduling", "ImagePullBackOff", "ErrImagePull", "CreateContainerError",
-          "Evicted", "Unhealthy", "Killing", "NetworkNotReady"
-        ].map(r => (
-          <div key={r} className="px-3.5 py-2.5 rounded-lg border border-red-500/10 bg-red-500/5 font-mono text-[10px] text-red-400 text-center">
-            {r}
-          </div>
-        ))}
-      </div>
-    </>),
-    "ai-overview": (<>
-      <h1 className={h2}>AI Diagnosis Engine</h1>
-      <p className={p}>When a container restarts, Srevox extracts logs, queries selected AI models (OpenAI, Anthropic, Groq, Ollama), and provides root-cause analysis with fix steps directly in your incident dashboard.</p>
-    </>),
-    "ai-providers": (<>
-      <h1 className={h2}>Supported AI Providers</h1>
-      <p className={p}>Configure API endpoints inside Dashboard → Settings → AI Configuration.</p>
-      <div className="space-y-4 my-4 text-left">
-        {[
-          ["Groq Cloud API", "Recommended for low cost. Highly fast response times.", "llama-3.3-70b-versatile, llama-3.1-8b-instant"],
-          ["OpenAI Platform", "Standard API integration for GPT models.", "gpt-4o-mini, gpt-4o"],
-          ["Anthropic Console", "High diagnostic accuracy using Claude models.", "claude-3-5-sonnet-latest"],
-          ["Ollama (Fully Local)", "Offline diagnostics. Data never leaves your container loop.", "llama3, mistral"]
-        ].map(([name, desc, models]) => (
-          <div key={name} className="p-4 rounded-xl border border-slate-900 bg-slate-950/20">
-            <div className="font-extrabold text-sm text-white mb-0.5">{name}</div>
-            <div className="text-xs text-slate-500 mb-2">{desc}</div>
-            <div className="font-mono text-[10px] text-indigo-400">{models}</div>
-          </div>
-        ))}
-      </div>
-    </>),
-    "ai-local": (<>
-      <h1 className={h2}>Local / Offline AI Setup</h1>
-      <p className={p}>Use Ollama to diagnose Kubernetes pod crashes completely offline.</p>
-      <h3 className={h3}>Install and Run Ollama</h3>
-      <CodeBlock code={`# Install Ollama CLI
-curl -fsSL https://ollama.com/install.sh | sh
+      {/* 10. RBAC Permissions */}
+      <section id="rbac" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>RBAC & Service Account Security</h1>
+        <p className={p}>Srevox requires read-only (<code className="text-indigo-500 font-mono font-bold">get, list, watch</code>) permissions on Pods and Events.</p>
+      </section>
 
-# Download Llama model
-ollama pull llama3
+      {/* 11. Email / Gmail */}
+      <section id="email" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Alert Channels — Email / Gmail (SMTP)</h1>
+        <p className={p}>Configure SMTP credentials to receive structured HTML crash reports directly in your engineering team inbox.</p>
+      </section>
 
-# Start serving local API
-ollama serve`}/>
-    </>),
-    "api-auth": (<>
-      <h1 className={h2}>API Authentication</h1>
-      <p className={p}>The Srevox API uses standard JSON Web Tokens. Authenticate your requests using the bearer header:</p>
-      <CodeBlock code={`# Obtain JWT token
-curl -X POST http://localhost:4000/api/auth/login \\
-  -H "Content-Type: application/json" \\
-  -d '{"email":"admin@srevox.local","password":"admin123"}'
+      {/* 12. Microsoft Teams */}
+      <section id="teams" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Alert Channels — Microsoft Teams</h1>
+        <p className={p}>Send rich Adaptive Cards into Microsoft Teams channels with single-click direct links to pod stacktraces.</p>
+      </section>
 
-# Access metrics route
-curl http://localhost:4000/api/incidents \\
-  -H "Authorization: Bearer YOUR_ACCESS_JWT"`}/>
-    </>),
-    "api-incidents": (<>
-      <h1 className={h2}>Incidents Endpoint</h1>
-      <CodeBlock code={`# List open incident tickets
-GET /api/incidents?status=open
+      {/* 13. WhatsApp */}
+      <section id="whatsapp" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Alert Channels — WhatsApp Integration</h1>
+        <p className={p}>Route urgent P1 CrashLoopBackOff alerts directly to on-call engineer WhatsApp numbers via Twilio API.</p>
+      </section>
 
-# Acknowledge incident
-POST /api/incidents/:id/acknowledge
+      {/* 14. Webhook / Slack */}
+      <section id="webhook" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Alert Channels — Webhooks & Slack</h1>
+        <p className={p}>Incoming Webhooks trigger custom HTTP POST payloads to Slack or custom automation endpoints.</p>
+      </section>
 
-# Run AI diagnosis
-POST /api/incidents/:id/diagnose`}/>
-    </>),
-    "api-clusters": (<>
-      <h1 className={h2}>Clusters Endpoint</h1>
-      <CodeBlock code={`# Fetch connected contexts
-GET /api/clusters
+      {/* 15. Creating Rules */}
+      <section id="rule-create" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Creating Custom Alert Rules</h1>
+        <p className={p}>Set minimum crash counts, target specific Kubernetes namespaces, and define custom alert triggers.</p>
+      </section>
 
-# Delete a context
-DELETE /api/clusters/:id`}/>
-    </>),
-    "k8s-redis": (<>
-      <h1 className={h2}>Simulate alerts via Redis</h1>
-      <p className={p}>Trigger a test incident in Srevox manually by publishing events directly to Redis:</p>
-      <CodeBlock code={`docker exec srevox-redis redis-cli PUBLISH srevox:crashes '{
-  "cluster_id": "YOUR_CLUSTER_UUID",
-  "pod_name": "billing-payment-worker-v2",
-  "namespace": "production",
-  "container_name": "app",
-  "crash_reason": "OOMKilled",
-  "restart_count": 3,
-  "detected_at": "2026-06-20T10:00:00Z"
-}'`}/>
-    </>),
-    "k8s-crash": (<>
-      <h1 className={h2}>Crash Loop Simulation</h1>
-      <p className={p}>Deploy a crashing pod template to test the alert loop pipeline live in your cluster:</p>
-      <CodeBlock code={`# Deploy a crashing busybox pod
-kubectl run crash-test \\
-  --image=busybox --restart=Always \\
-  -- /bin/sh -c "exit 1"`}/>
-    </>),
-    "k8s-watcher": (<>
-      <h1 className={h2}>Run Agent Separately</h1>
-      <p className={p}>Run the Go watcher agent binary locally in your terminal for debugging purposes:</p>
-      <CodeBlock code={`cd apps/watcher
-go mod tidy
-REDIS_URL=redis://localhost:6379 CLUSTER_ID=YOUR_UUID CLUSTER_NAME=dev go run cmd/watcher/main.go`}/>
-    </>),
-    "k8s-full": (<>
-      <h1 className={h2}>Complete Setup Validation</h1>
-      <p className={p}>Verify Srevox alerts by connecting a cluster agent, creating a notification rule pointing to email/Slack, and triggering a container crash in the watched namespace.</p>
-    </>),
-  };
-  return <>{map[id] || <p className="text-sm text-slate-500 text-left">Select a topic from the sidebar.</p>}</>;
+      {/* 16. Noise Control */}
+      <section id="noise" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Noise Control & Global Muting</h1>
+        <p className={p}>Use cooldown block timers to prevent alert storms when a pod continuously enters CrashLoopBackOff.</p>
+      </section>
+
+      {/* 17. Crash Reasons */}
+      <section id="reasons" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Recognized Crash Reasons</h1>
+        <p className={p}>Srevox automatically categorizes OOMKilled (Exit 137), SIGSEGV (Exit 139), LivenessProbe failures, and ImagePullBackOff.</p>
+      </section>
+
+      {/* 18. AI Overview */}
+      <section id="ai-overview" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>AI Incident Diagnostics Overview</h1>
+        <p className={p}>Click "Diagnose with AI" on any incident page to generate an instant root-cause breakdown and YAML fix recommendation.</p>
+      </section>
+
+      {/* 19. AI Providers */}
+      <section id="ai-providers" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Supported AI Providers</h1>
+        <p className={p}>Choose between Groq (ultra-fast inference), OpenAI (GPT-4o), Anthropic (Claude 3.5), or local GPU Ollama containers.</p>
+      </section>
+
+      {/* 20. Local / Offline AI */}
+      <section id="ai-local" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Local & Offline Ollama AI Setup</h1>
+        <p className={p}>Connect local GPU-enabled Ollama containers (running models like Llama 3 or CodeLlama) for 100% private, zero-egress diagnostics.</p>
+      </section>
+
+      {/* 21. API Authentication */}
+      <section id="api-auth" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>API Authentication & Bearer Tokens</h1>
+        <p className={p}>Authenticate REST API calls using Bearer Tokens generated in Administrator Settings.</p>
+        <CodeBlock isLight={isLight} code="curl -H 'Authorization: Bearer <TOKEN>' http://localhost:4000/api/v1/incidents" />
+      </section>
+
+      {/* 22. API Incidents */}
+      <section id="api-incidents" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>API Endpoints — Incidents</h1>
+        <p className={p}>Query, filter, or resolve active cluster incidents programmatically via REST API endpoints.</p>
+      </section>
+
+      {/* 23. API Clusters */}
+      <section id="api-clusters" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>API Endpoints — Clusters</h1>
+        <p className={p}>Register new Kubernetes clusters, update API bearer tokens, or query node health metrics.</p>
+      </section>
+
+      {/* 24. Test via Redis */}
+      <section id="k8s-redis" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Testing Alert Pipeline via Redis</h1>
+        <p className={p}>Publish test incident payloads directly to Redis pub/sub channel to verify alerting rules without crashing real pods.</p>
+      </section>
+
+      {/* 25. Simulate Pod Crash */}
+      <section id="k8s-crash" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Simulating Pod Crashes</h1>
+        <p className={p}>Verify Srevox alerts by deploying a test container that exits with code 139 or OOMKilled states.</p>
+        <CodeBlock isLight={isLight} code="kubectl run test-crash --image=busybox --restart=Never -- sh -c 'exit 1'" />
+      </section>
+
+      {/* 26. Run Go Watcher */}
+      <section id="k8s-watcher" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Running the Go Watcher Service</h1>
+        <p className={p}>Run the srevox-agent Go binary directly from source code during local development.</p>
+      </section>
+      {/* 27. Full Cluster Setup */}
+      <section id="k8s-full" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
+        <h1 className={h2}>Full Multi-Cluster Production Setup</h1>
+        <p className={p}>Complete guide for deploying Srevox across production EKS, GKE, and bare-metal Kubernetes environments.</p>
+      </section>
+
+    </div>
+  );
 }
 
 export default function DocsPage() {
+  const { theme, setTheme, mounted, isLight } = useSrevoxTheme("srevox_docs_theme", "dark");
   const [active, setActive] = useState("what");
-  const [open, setOpen] = useState(["intro", "k8s"]);
+  const [open, setOpen] = useState(["intro", "k8s", "clusters", "channels", "rules", "ai", "api"]);
   const [search, setSearch] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<"yes" | "no" | null>(null);
+  const [readingMode, setReadingMode] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && readingMode) {
+        setReadingMode(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [readingMode]);
+
+  // Bulletproof Window Scroll Spy to update Minimap TOC and Left Sidebar dynamically while scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 180;
+      for (let i = ALL_TOC_ITEMS.length - 1; i >= 0; i--) {
+        const item = ALL_TOC_ITEMS[i];
+        const el = document.getElementById(item.id);
+        if (el && el.offsetTop <= scrollPosition) {
+          setActive(item.id);
+          // Automatically expand matching parent category in Left Sidebar
+          const parentNav = NAV.find(s => s.items.some(it => it.id === item.id));
+          if (parentNav) {
+            setOpen(prev => prev.includes(parentNav.id) ? prev : [...prev, parentNav.id]);
+          }
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Automatically scroll the Minimap box internally (Without moving the main page viewport scroll)
+  useEffect(() => {
+    if (active && mounted) {
+      const activeEl = document.getElementById(`minimap-item-${active}`);
+      const minimapAside = document.getElementById("minimap-sidebar-aside");
+      if (activeEl && minimapAside) {
+        const topOffset = activeEl.offsetTop - minimapAside.offsetTop;
+        minimapAside.scrollTo({ top: Math.max(0, topOffset - 60), behavior: "smooth" });
+      }
+    }
+  }, [active, mounted]);
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const handleSectionClick = (s: typeof NAV[number]) => {
     const isOpen = open.includes(s.id);
@@ -755,41 +441,101 @@ export default function DocsPage() {
       setOpen(p => p.filter(x => x !== s.id));
     } else {
       setOpen(p => [...p, s.id]);
-      if (s.items && s.items.length > 0) {
-        setActive(s.items[0].id);
-      }
+    }
+  };
+
+  const scrollToTopic = (topicId: string) => {
+    setActive(topicId);
+    setMobileNav(false);
+    const el = document.getElementById(topicId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   const filtered = search ? NAV.map(s => ({ ...s, items: s.items.filter(i => i.title.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0) : NAV;
 
   return (
-    <div className="min-h-screen bg-[#070913] text-slate-200 font-sans selection:bg-indigo-500/30 overflow-x-hidden bg-grid-pattern relative">
+    <div suppressHydrationWarning className={`min-h-screen font-sans selection:bg-indigo-500/30 overflow-x-hidden relative transition-colors duration-300 ${
+      isLight ? "bg-[#f8fafc] text-slate-800" : "bg-[#070913] text-slate-200 bg-grid-pattern"
+    }`}>
       
-      {/* Decorative Orbs */}
-      <div className="absolute top-[-100px] left-[5%] w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none animate-float z-0" />
-      <div className="absolute bottom-[100px] right-[5%] w-[450px] h-[450px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none animate-float-reverse z-0" />
+      {/* Decorative Orbs (Fixed DOM node structure for SSR/CSR hydration match) */}
+      <div className={`absolute top-[-100px] left-[5%] w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none animate-float z-0 ${isLight ? "hidden" : ""}`} />
+      <div className={`absolute bottom-[100px] right-[5%] w-[450px] h-[450px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none animate-float-reverse z-0 ${isLight ? "hidden" : ""}`} />
 
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070913]/70 backdrop-blur-xl border-b border-slate-900/60 h-20 flex items-center px-6 gap-6 justify-between">
+      <nav className={`fixed top-0 left-0 right-0 z-50 h-20 flex items-center px-6 gap-6 justify-between border-b transition-all duration-300 ${
+        readingMode ? "opacity-0 pointer-events-none -translate-y-full" : "opacity-100"
+      } ${
+        isLight ? "bg-white/80 backdrop-blur-xl border-slate-200" : "bg-[#070913]/70 backdrop-blur-xl border-slate-900/60"
+      }`}>
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3 no-underline">
             <SrevoxLogo size={32} />
-            <span className="font-extrabold text-white text-lg tracking-tight leading-none flex items-center gap-2">
-              Srevox
+            <span className={`font-extrabold text-lg tracking-tight leading-none flex items-center gap-2 ${isLight ? "text-slate-900" : "text-white"}`}>
+              Srevox Docs
               <span className="px-2 py-0.5 text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-mono">
-                v0.1.21
+                v0.1.23
               </span>
             </span>
           </Link>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Reading Mode Button */}
+          <button
+            type="button"
+            onClick={() => setReadingMode(true)}
+            className={`text-xs font-bold transition-all flex items-center gap-1.5 rounded-xl px-3.5 py-2 cursor-pointer ${
+              isLight 
+                ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200" 
+                : "bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-slate-800"
+            }`}
+            title="Focus Reading Mode (Distraction-Free)"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">Reading Mode</span>
+          </button>
+
+          {/* Independent Theme Switcher */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              isLight 
+                ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" 
+                : "bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800"
+            }`}
+            title={mounted ? `Switch to ${isLight ? "Dark" : "Light"} Theme (Docs Only)` : "Switch Theme"}
+          >
+            {mounted ? (
+              isLight ? (
+                <>
+                  <Moon className="w-4 h-4 text-indigo-500" />
+                  <span className="hidden md:inline">Dark</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="hidden md:inline">Light</span>
+                </>
+              )
+            ) : (
+              <>
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span className="hidden md:inline">Light</span>
+              </>
+            )}
+          </button>
+
           <Link href="/feedback" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-2">
             <MessageSquare className="w-3.5 h-3.5" /> Feedback
           </Link>
-          <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 bg-slate-900/40 border border-slate-800/80 rounded-xl px-4 py-2">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
+          <Link href="/" className={`text-xs font-bold transition-colors flex items-center gap-1.5 border rounded-xl px-4 py-2 ${
+            isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" : "bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white"
+          }`}>
+            <ArrowLeft className="w-3.5 h-3.5" /> Home
           </Link>
           <button 
             onClick={() => setMobileNav(!mobileNav)} 
@@ -801,22 +547,28 @@ export default function DocsPage() {
       </nav>
 
       {/* Docs Layout */}
-      <div className="flex pt-20 min-h-screen">
+      <div className={`flex min-h-screen transition-all duration-300 ${readingMode ? "pt-6 justify-center" : "pt-20"}`}>
         
-        {/* Sidebar */}
-        <aside className={`fixed top-20 left-0 w-64 h-[calc(100vh-80px)] border-r border-slate-900/60 bg-[#070913]/90 md:bg-[#070913]/40 backdrop-blur-md flex flex-col z-40 transition-transform duration-300 md:translate-x-0 ${
-          mobileNav ? "translate-x-0" : "-translate-x-full"
+        {/* Left Sidebar Navigation */}
+        <aside className={`fixed top-20 left-0 w-64 h-[calc(100vh-80px)] border-r flex flex-col z-40 transition-all duration-300 ${
+          readingMode ? "hidden" : ""
+        } ${
+          mobileNav ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        } ${
+          isLight ? "bg-white/90 border-slate-200 backdrop-blur-md" : "bg-[#070913]/90 md:bg-[#070913]/40 border-slate-900/60 backdrop-blur-md"
         }`}>
           {/* Search */}
-          <div className="p-4 border-b border-slate-900/60">
+          <div className={`p-4 border-b ${isLight ? "border-slate-200" : "border-slate-900/60"}`}>
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text"
                 placeholder="Search guide..."
                 value={search} 
                 onChange={e => setSearch(e.target.value)}
-                className="w-full bg-[#070913] border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-sans placeholder-slate-600"
+                className={`w-full border rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-sans ${
+                  isLight ? "bg-slate-100 border-slate-200 text-slate-900 placeholder-slate-400" : "bg-[#070913] border-slate-800 text-white placeholder-slate-600"
+                }`}
               />
             </div>
           </div>
@@ -830,25 +582,27 @@ export default function DocsPage() {
                   <button 
                     onClick={() => handleSectionClick(s)} 
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-200 cursor-pointer ${
-                      isSectionOpen ? "bg-slate-900/30 text-white" : "text-slate-400 hover:bg-slate-900/40 hover:text-white"
+                      isSectionOpen 
+                        ? (isLight ? "bg-slate-100 text-indigo-600 font-bold" : "bg-slate-900/30 text-white") 
+                        : (isLight ? "text-slate-600 hover:bg-slate-100 hover:text-slate-900" : "text-slate-400 hover:bg-slate-900/40 hover:text-white")
                     }`}
                   >
-                    <s.icon className={`w-4 h-4 shrink-0 transition-colors duration-200 ${isSectionOpen ? "text-indigo-400" : "text-slate-500"}`} />
+                    <s.icon className={`w-4 h-4 shrink-0 transition-colors duration-200 ${isSectionOpen ? "text-indigo-500" : "text-slate-400"}`} />
                     <span className="flex-1 text-[10px] font-black uppercase tracking-wider">{s.title}</span>
-                    <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isSectionOpen ? "rotate-90 text-indigo-400" : "text-slate-500"}`} />
+                    <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isSectionOpen ? "rotate-90 text-indigo-500" : "text-slate-400"}`} />
                   </button>
                   {isSectionOpen && (
-                    <div className="ml-5 border-l border-slate-900 pl-3.5 py-1 space-y-1 text-left relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[1px] before:bg-gradient-to-b before:from-indigo-500/30 before:to-transparent">
+                    <div className={`ml-5 border-l pl-3.5 py-1 space-y-1 text-left relative ${isLight ? "border-slate-200" : "border-slate-900"}`}>
                       {s.items.map(item => {
                         const isItemActive = active === item.id;
                         return (
                           <button 
                             key={item.id} 
-                            onClick={() => { setActive(item.id); setMobileNav(false); }} 
+                            onClick={() => scrollToTopic(item.id)} 
                             className={`w-full text-left py-1.5 px-3 rounded-lg text-xs transition-all duration-200 cursor-pointer relative ${
                               isItemActive 
-                                ? "bg-indigo-500/10 text-indigo-300 font-extrabold shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] border-l-2 border-indigo-500 pl-2 rounded-l-none" 
-                                : "text-slate-500 hover:text-slate-200 hover:bg-slate-900/20"
+                                ? (isLight ? "bg-indigo-50 text-indigo-600 font-black border-l-2 border-indigo-600 pl-2 rounded-l-none" : "bg-indigo-500/10 text-indigo-300 font-extrabold border-l-2 border-indigo-500 pl-2 rounded-l-none")
+                                : (isLight ? "text-slate-500 hover:text-slate-900 hover:bg-slate-100" : "text-slate-500 hover:text-slate-200 hover:bg-slate-900/20")
                             }`}
                           >
                             {item.title}
@@ -862,42 +616,50 @@ export default function DocsPage() {
             })}
           </div>
 
-          <div className="p-4 border-t border-slate-900/60 text-center text-[10px] text-slate-500 font-mono">
-            Srevox v0.1.21
+          <div className={`p-4 border-t text-center text-[10px] font-mono ${isLight ? "border-slate-200 text-slate-400" : "border-slate-900/60 text-slate-500"}`}>
+            Srevox v0.1.23
           </div>
         </aside>
 
-        {/* Content Panel */}
-        <main className="flex-1 md:ml-64 p-8 md:p-12 overflow-y-auto max-w-4xl mx-auto z-10 flex flex-col justify-between min-h-[calc(100vh-80px)]">
+        {/* Main Center Content Container */}
+        <main className={`flex-1 transition-all duration-300 p-6 md:p-12 z-10 flex flex-col justify-between min-h-[calc(100vh-80px)] ${
+          readingMode ? "max-w-3xl text-base leading-relaxed" : "md:ml-64 xl:mr-64 max-w-4xl pr-4 lg:pr-8"
+        }`}>
           <div className="flex-1">
-            <Content id={active} />
+            <FullScrollableDoc isLight={isLight} />
           </div>
 
           {/* Helpfulness Widget & Doc Footer */}
-          <div className="mt-16 pt-12 border-t border-slate-900/80 space-y-12">
+          <div className={`mt-16 pt-12 border-t space-y-12 ${isLight ? "border-slate-200" : "border-slate-900/80"}`}>
             {/* Helpfulness Widget */}
-            <div className="glass-panel p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className={`p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6 border ${
+              isLight ? "bg-white border-slate-200 shadow-sm" : "glass-panel"
+            }`}>
               <div className="text-center sm:text-left">
-                <h4 className="text-sm font-bold text-white">Was this page helpful?</h4>
+                <h4 className={`text-sm font-bold ${isLight ? "text-slate-900" : "text-white"}`}>Was this page helpful?</h4>
                 <p className="text-xs text-slate-500 mt-1">Help us improve the Srevox documentation.</p>
               </div>
               <div className="flex items-center gap-3">
                 {feedbackSubmitted ? (
-                  <div className="text-xs text-indigo-400 font-bold flex items-center gap-1.5 animate-pulse">
-                    <CheckCircle className="w-4 h-4 text-indigo-400" />
+                  <div className="text-xs text-indigo-500 font-bold flex items-center gap-1.5 animate-pulse">
+                    <CheckCircle className="w-4 h-4 text-indigo-500" />
                     <span>Thank you for your feedback!</span>
                   </div>
                 ) : (
                   <>
                     <button 
                       onClick={() => setFeedbackSubmitted("yes")}
-                      className="px-4 py-2 border border-slate-800 bg-slate-900/40 text-xs font-bold rounded-xl hover:bg-indigo-600/10 hover:border-indigo-500/30 hover:text-indigo-400 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer text-slate-300"
+                      className={`px-4 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-indigo-600/10 hover:text-indigo-400"
+                      }`}
                     >
                       Yes
                     </button>
                     <button 
                       onClick={() => setFeedbackSubmitted("no")}
-                      className="px-4 py-2 border border-slate-800 bg-slate-900/40 text-xs font-bold rounded-xl hover:bg-indigo-600/10 hover:border-indigo-500/30 hover:text-indigo-400 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] cursor-pointer text-slate-300"
+                      className={`px-4 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-indigo-600/10 hover:text-indigo-400"
+                      }`}
                     >
                       No
                     </button>
@@ -907,21 +669,69 @@ export default function DocsPage() {
             </div>
 
             {/* Utility Doc Footer */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-600 pb-4 font-mono">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-500 pb-4 font-mono">
               <div className="flex items-center gap-2">
                 <SrevoxLogo size={20} />
-                <span className="text-slate-400 font-bold">Srevox Docs</span>
+                <span className={`font-bold ${isLight ? "text-slate-700" : "text-slate-400"}`}>Srevox Docs</span>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
-                <a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">GitHub</a>
-                <a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Setup Guide</a>
-                <a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Discord</a>
-                <a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors">Twitter</a>
+                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
+                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Setup Guide</a>
+                <a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Discord</a>
+                <a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Twitter</a>
               </div>
             </div>
           </div>
         </main>
+
+        {/* Right-Side Minimap TOC (Halved Height with Auto-Scroll & Modern Title "IN THIS GUIDE") */}
+        {!readingMode && (
+          <aside id="minimap-sidebar-aside" className={`w-60 hidden xl:block fixed top-24 right-6 max-h-[380px] overflow-y-auto custom-scrollbar p-4 rounded-2xl border text-left shrink-0 z-30 transition-all duration-300 shadow-xl ${
+            isLight ? "bg-white/95 border-slate-200 backdrop-blur-md" : "bg-[#070913]/95 border-slate-900/80 backdrop-blur-md"
+          }`}>
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-3 pb-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+              <span>IN THIS GUIDE</span>
+            </div>
+            <ul className="space-y-1 text-xs">
+              {ALL_TOC_ITEMS.map((item) => {
+                const isActive = active === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      id={`minimap-item-${item.id}`}
+                      type="button"
+                      onClick={() => scrollToTopic(item.id)}
+                      className={`w-full text-left py-1.5 px-2.5 rounded-lg transition-all duration-150 cursor-pointer ${
+                        isActive
+                          ? (isLight ? "bg-indigo-50 text-indigo-600 font-extrabold border-l-2 border-indigo-600 pl-2 rounded-l-none" : "bg-indigo-500/10 text-indigo-400 font-extrabold border-l-2 border-indigo-500 pl-2 rounded-l-none")
+                          : (isLight ? "text-slate-500 hover:text-slate-900 hover:bg-slate-100" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/40")
+                      }`}
+                    >
+                      {item.title}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+        )}
+
       </div>
+
+      {/* Floating Exit Reading Mode Bar */}
+      {readingMode && (
+        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
+          <button
+            type="button"
+            onClick={() => setReadingMode(false)}
+            className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-2xl flex items-center gap-2 border border-indigo-400/40 cursor-pointer active:scale-95 transition-all"
+          >
+            <Eye className="w-4 h-4" />
+            <span>Exit Reading Mode (Esc)</span>
+          </button>
+        </div>
+      )}
 
     </div>
   );
