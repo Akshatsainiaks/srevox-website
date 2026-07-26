@@ -90,30 +90,34 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#03050c] text-slate-100 font-sans selection:bg-indigo-500/30 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#030712] text-slate-100 font-sans selection:bg-sky-500/30 overflow-x-hidden relative">
       {/* Decorative Blur Orbs */}
-      <div className="absolute top-[-150px] left-[10%] w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute top-[300px] right-[10%] w-[600px] h-[600px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none z-0" />
+      <div className="absolute top-[-150px] left-[10%] w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-[160px] pointer-events-none z-0" />
+      <div className="absolute top-[300px] right-[10%] w-[600px] h-[600px] bg-cyan-500/8 rounded-full blur-[160px] pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-25 pointer-events-none" />
 
       {/* Header */}
-      <header className="relative z-50 border-b border-slate-900/60 bg-[#03050c]/85 backdrop-blur-xl sticky top-0">
+      <header className="relative z-50 border-b border-slate-800/60 bg-[#030712]/85 backdrop-blur-2xl sticky top-0 shadow-2xl shadow-sky-950/20">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3.5 hover:opacity-90 transition-all">
-            <SrevoxLogo size={40} />
+          <Link href="/" className="flex items-center gap-3.5 hover:opacity-90 transition-all group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-sky-500/20 rounded-full blur-md group-hover:bg-sky-400/30 transition-all" />
+              <SrevoxLogo size={40} className="relative" />
+            </div>
             <span className="font-black text-white text-2xl tracking-tight leading-none">Srevox</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-8 text-xs uppercase font-extrabold tracking-widest text-slate-400">
-            <Link href="/#demo" className="hover:text-indigo-400 transition-colors">Console Demo</Link>
-            <Link href="/docs" className="hover:text-indigo-400 transition-colors">Documentation</Link>
-            <Link href="/#channels" className="hover:text-indigo-400 transition-colors">Integrations</Link>
-            <Link href="/#configurator" className="hover:text-indigo-400 transition-colors">Environment Builder</Link>
+            <Link href="/#demo" className="hover:text-sky-400 transition-colors">Console Demo</Link>
+            <Link href="/docs" className="hover:text-sky-400 transition-colors">Documentation</Link>
+            <Link href="/#channels" className="hover:text-sky-400 transition-colors">Integrations</Link>
+            <Link href="/#configurator" className="hover:text-sky-400 transition-colors">Environment Builder</Link>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link 
               href="/"
-              className="text-xs font-bold text-slate-300 hover:text-white transition-all duration-300 flex items-center gap-2 bg-slate-950 border border-slate-800/80 rounded-xl px-4 py-2.5 hover:scale-[1.03]"
+              className="text-xs font-bold text-slate-300 hover:text-white transition-all duration-300 flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-2.5 hover:scale-[1.03]"
             >
               <ArrowLeft className="w-4 h-4" /> Back to Home
             </Link>
@@ -125,8 +129,8 @@ export default function FeedbackPage() {
       <main className="relative z-10 max-w-2xl mx-auto pt-20 pb-28 px-6">
         <div className="space-y-8">
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-extrabold mb-2">
-              <MessageSquare className="w-3.5 h-3.5 fill-indigo-400/20" /> Help Us Improve
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-extrabold mb-2">
+              <MessageSquare className="w-3.5 h-3.5 fill-sky-400/20" /> Help Us Improve
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
               Share your feedback
@@ -137,86 +141,87 @@ export default function FeedbackPage() {
           </div>
 
           {/* Form Container */}
-          <div className="bg-slate-950/40 border border-slate-900 rounded-3xl p-8 backdrop-blur-md relative overflow-hidden shadow-2xl">
-            {success ? (
-              <div className="py-10 text-center space-y-6 animate-modal-slide-up">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-8 h-8 text-emerald-400 animate-bounce" />
+          <div className="bg-slate-950/60 border border-sky-500/20 rounded-3xl p-8 backdrop-blur-2xl relative overflow-hidden shadow-2xl">
+            {submitted ? (
+              <div className="py-12 text-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <div className="space-y-2">
-                  <h3 className="font-bold text-white text-xl">Feedback Sent Successfully!</h3>
-                  <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed">
-                    Thank you for helping us improve Srevox. The core development team has been notified and we will review your feedback shortly.
-                  </p>
-                </div>
+                <h3 className="text-2xl font-bold text-white">Feedback Received!</h3>
+                <p className="text-slate-400 text-xs max-w-xs mx-auto">
+                  Thank you for helping us make Srevox better. We appreciate your input.
+                </p>
                 <button
-                  onClick={() => setSuccess(false)}
-                  className="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold py-2.5 px-6 rounded-xl text-xs transition-all border border-slate-800"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setMessage("");
+                    setSubject("");
+                  }}
+                  className="mt-4 px-6 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold transition-all"
                 >
-                  Send another suggestion
+                  Send another message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5 text-left">
                 {error && (
                   <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-xs font-semibold text-red-400 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
                     <span>{error}</span>
                   </div>
                 )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                      Your Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alex@company.com"
-                      disabled={sending}
-                      required
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/80 transition-all font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                      Feedback Type
-                    </label>
-                    <select
-                      value={feedbackType}
-                      onChange={(e) => setFeedbackType(e.target.value)}
-                      disabled={sending}
-                      className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500/80 transition-all font-semibold appearance-none"
-                    >
-                      <option value="improvement">General Suggestion</option>
-                      <option value="bug">Report a Bug / Issue</option>
-                      <option value="feature">Request a Feature</option>
-                      <option value="other">Other Inquiry</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                    Subject
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Your Email Address *
                   </label>
                   <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Short description of your query"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
                     disabled={sending}
                     required
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/80 transition-all font-semibold"
+                    className="w-full bg-[#03050c] border border-slate-800 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-all font-semibold"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                    Message Details
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                      Topic / Category
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      disabled={sending}
+                      className="w-full bg-[#03050c] border border-slate-800 rounded-xl px-4 py-3.5 text-xs text-slate-300 focus:outline-none focus:border-sky-500 transition-all font-semibold appearance-none"
+                    >
+                      <option value="General Feedback">General Feedback</option>
+                      <option value="Bug Report">Bug Report</option>
+                      <option value="Feature Request">Feature Request</option>
+                      <option value="Deployment Help">Deployment Help</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                      Subject Line *
+                    </label>
+                    <input
+                      type="text"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      placeholder="Summary of issue or idea..."
+                      disabled={sending}
+                      required
+                      className="w-full bg-[#03050c] border border-slate-800 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Detailed Message *
                   </label>
                   <textarea
                     value={message}
@@ -225,14 +230,14 @@ export default function FeedbackPage() {
                     disabled={sending}
                     required
                     rows={6}
-                    className="w-full bg-slate-950 border border-slate-900 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/80 transition-all font-semibold resize-none"
+                    className="w-full bg-[#03050c] border border-slate-800 rounded-xl px-4 py-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-sky-500 transition-all font-semibold resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={sending || !email.trim() || !subject.trim() || !message.trim()}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-extrabold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-indigo-600/20 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-xs uppercase tracking-wider py-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-sky-500/20 disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]"
                 >
                   {sending ? (
                     <>
@@ -274,9 +279,9 @@ export default function FeedbackPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Product</h4>
               <ul className="space-y-2.5 text-sm font-medium">
-                <li><Link href="/#demo" className="text-slate-400 hover:text-indigo-400 transition-colors">Interactive Demo</Link></li>
-                <li><Link href="/#channels" className="text-slate-400 hover:text-indigo-400 transition-colors">Alert Channels</Link></li>
-                <li><Link href="/#configurator" className="text-slate-400 hover:text-indigo-400 transition-colors">Config Builder</Link></li>
+                <li><Link href="/#demo" className="text-slate-400 hover:text-sky-400 transition-colors">Interactive Demo</Link></li>
+                <li><Link href="/#channels" className="text-slate-400 hover:text-sky-400 transition-colors">Alert Channels</Link></li>
+                <li><Link href="/#configurator" className="text-slate-400 hover:text-sky-400 transition-colors">Config Builder</Link></li>
               </ul>
             </div>
 
@@ -284,9 +289,9 @@ export default function FeedbackPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Resources</h4>
               <ul className="space-y-2.5 text-sm font-medium">
-                <li><Link href="/docs" className="text-slate-400 hover:text-indigo-400 transition-colors">Documentation</Link></li>
-                <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">GitHub Repository</a></li>
-                <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">Deploy Configs</a></li>
+                <li><Link href="/docs" className="text-slate-400 hover:text-sky-400 transition-colors">Documentation</Link></li>
+                <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-sky-400 transition-colors">GitHub Repository</a></li>
+                <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-sky-400 transition-colors">Deploy Configs</a></li>
               </ul>
             </div>
 
@@ -294,9 +299,9 @@ export default function FeedbackPage() {
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-white uppercase tracking-widest">Community</h4>
               <ul className="space-y-2.5 text-sm font-medium">
-                <li><a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">Discord Server</a></li>
-                <li><a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">Twitter / X</a></li>
-                <li><a href="https://github.com/Akshatsainiaks/srevox-setup/issues" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-indigo-400 transition-colors">Issue Tracker</a></li>
+                <li><a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-sky-400 transition-colors">Discord Server</a></li>
+                <li><a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-sky-400 transition-colors">Twitter / X</a></li>
+                <li><a href="https://github.com/Akshatsainiaks/srevox-setup/issues" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-sky-400 transition-colors">Issue Tracker</a></li>
               </ul>
             </div>
           </div>

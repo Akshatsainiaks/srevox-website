@@ -1,5 +1,93 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
+// Hook for observing element visibility in the viewport
+export function useInView<T extends HTMLElement = HTMLDivElement>(options?: IntersectionObserverInit) {
+  const ref = useRef<T | null>(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      setIsInView(true);
+      return;
+    }
+
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsInView(true);
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.1, ...options });
+
+    observer.observe(element);
+
+    return () => {
+      if (element) observer.unobserve(element);
+    };
+  }, [options]);
+
+  return { ref, isInView };
+}
+
+// Custom hook to animate numbers smoothly with ease-out cubic curve (slows down near target) when visible
+export function useAnimatedCounter(targetValue: number, duration: number = 2200, isEnabled: boolean = true) {
+  const [displayCount, setDisplayCount] = useState<number>(0);
+  const hasStartedRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (!isEnabled) return;
+    if (hasStartedRef.current && targetValue === 0) return;
+
+    hasStartedRef.current = true;
+
+    let animationFrameId: number;
+    let startTimestamp: number | null = null;
+    let startValue = 0;
+
+    setDisplayCount((prev) => {
+      startValue = prev;
+      return prev;
+    });
+
+    const endValue = targetValue;
+
+    if (endValue <= 0) {
+      setDisplayCount(0);
+      return;
+    }
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth ease-out cubic curve for natural slow-down at the end
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(startValue + (endValue - startValue) * easeProgress);
+
+      setDisplayCount(current);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step);
+      } else {
+        setDisplayCount(endValue);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [targetValue, duration, isEnabled]);
+
+  return displayCount;
+}
 
 // Official Docker SVG Logo Component
 export function DockerLogo({ size = 18, className = "" }: { size?: number; className?: string }) {
@@ -16,9 +104,14 @@ interface DockerPullsBadgeProps {
 }
 
 export function DockerPullsBadge({ variant = "pill", className = "" }: DockerPullsBadgeProps) {
-  // Pulls count from Docker Hub (fetches highest pull count, default 2055)
-  const [highestPullCount, setHighestPullCount] = useState<number>(2102);
-  const [formattedPulls, setFormattedPulls] = useState("2,102+");
+  // Target pull count from Docker Hub (fetches highest pull count, default 2102)
+  const [targetPullCount, setTargetPullCount] = useState<number>(2102);
+
+  // Viewport intersection observer ref
+  const { ref: containerRef, isInView } = useInView<HTMLAnchorElement>();
+
+  // Animated counter hook (animates up to target count over 2200ms when element enters viewport)
+  const animatedPullCount = useAnimatedCounter(targetPullCount, 2200, isInView);
 
   useEffect(() => {
     // Dynamically fetch pull count from /api/srevox
@@ -29,29 +122,29 @@ export function DockerPullsBadge({ variant = "pill", className = "" }: DockerPul
         if (token) {
           const val = parseInt(atob(token), 10);
           if (!isNaN(val)) {
-            setHighestPullCount(val);
-            setFormattedPulls(`${val.toLocaleString()}+`);
+            setTargetPullCount(val);
           }
         }
       } catch {
-        setHighestPullCount(2102);
-        setFormattedPulls("2,102+");
+        setTargetPullCount(2102);
       }
     };
 
     fetchHighestDockerPulls();
   }, []);
 
+  const formattedPulls = `${animatedPullCount.toLocaleString()}+`;
   const dockerHubProfileUrl = "https://hub.docker.com/u/akshatsaini08";
 
   if (variant === "compact") {
     return (
       <a
+        ref={containerRef}
         href={dockerHubProfileUrl}
         target="_blank"
         rel="noreferrer"
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 hover:text-sky-300 text-xs font-bold transition-all hover:bg-sky-500/15 ${className}`}
-        title={`Highest Docker Image Pulls: ${highestPullCount.toLocaleString()}`}
+        title={`Highest Docker Image Pulls: ${targetPullCount.toLocaleString()}`}
       >
         <DockerLogo size={16} />
         <span>Docker Pulls:</span>
@@ -65,6 +158,7 @@ export function DockerPullsBadge({ variant = "pill", className = "" }: DockerPul
   if (variant === "pill") {
     return (
       <a
+        ref={containerRef}
         href={dockerHubProfileUrl}
         target="_blank"
         rel="noreferrer"
@@ -85,6 +179,7 @@ export function DockerPullsBadge({ variant = "pill", className = "" }: DockerPul
   // Variant: "box" - Displaying strictly only the highest Docker pull count number without image name or tags
   return (
     <a
+      ref={containerRef}
       href={dockerHubProfileUrl}
       target="_blank"
       rel="noreferrer"

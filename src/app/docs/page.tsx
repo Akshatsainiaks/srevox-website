@@ -9,33 +9,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Srevox Logo Component
-function SrevoxLogo({ size = 32, className = "" }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 680 680" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <linearGradient id="docs-logo-g1" x1="20%" y1="0%" x2="80%" y2="100%">
-          <stop offset="0%" stopColor="#00cfff"/>
-          <stop offset="40%" stopColor="#1a7fff"/>
-          <stop offset="100%" stopColor="#0033cc"/>
-        </linearGradient>
-        <linearGradient id="docs-logo-g2" x1="0%" y1="0%" x2="0%" y2="60%">
-          <stop offset="0%" stopColor="white" stopOpacity="0.5"/>
-          <stop offset="100%" stopColor="white" stopOpacity="0"/>
-        </linearGradient>
-        <linearGradient id="docs-logo-g3" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#60e0ff" stopOpacity="0.8"/>
-          <stop offset="100%" stopColor="#0044ff" stopOpacity="0.2"/>
-        </linearGradient>
-      </defs>
-      
-      <path d="M340,60 L540,175 L540,445 Q540,580 340,625 Q140,580 140,445 L140,175 Z" fill="url(#docs-logo-g1)" stroke="url(#docs-logo-g3)" strokeWidth="3"/>
-      <path d="M340,60 L540,175 L540,310 Q445,275 340,255 Q255,245 140,275 L140,175 Z" fill="url(#docs-logo-g2)" opacity="0.7"/>
-      <path d="M340,80 L522,188 L522,443 Q522,562 340,602 Q158,562 158,443 L158,188 Z" fill="none" stroke="white" strokeWidth="1.5" opacity="0.25"/>
-      <polyline points="175,345 235,345 255,298 278,398 304,282 328,345 395,345 418,302 442,385 464,345 510,345" fill="none" stroke="white" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
+import { SrevoxLogo } from "@/components/SrevoxLogo";
+import { supabase, getDynamicDocsData } from "@/lib/supabase";
 
 // Custom Callout Box Component (Light/Dark Mode Aware)
 function Callout({ type, isLight = false, children }: { type: "info" | "warning" | "success" | "tip"; isLight?: boolean; children: React.ReactNode }) {
@@ -56,9 +31,9 @@ function Callout({ type, isLight = false, children }: { type: "info" | "warning"
       iconColor: isLight ? "text-emerald-600" : "text-emerald-400"
     },
     tip: {
-      border: isLight ? "border-purple-200 bg-purple-50 text-purple-900" : "border-purple-500/20 bg-purple-500/5 text-purple-300",
+      border: isLight ? "border-cyan-200 bg-cyan-50 text-cyan-900" : "border-cyan-500/20 bg-cyan-500/5 text-cyan-300",
       icon: Sparkles,
-      iconColor: isLight ? "text-purple-600" : "text-purple-400"
+      iconColor: isLight ? "text-cyan-600" : "text-cyan-400"
     }
   }[type];
 
@@ -116,6 +91,50 @@ const NAV = [
 
 const ALL_TOC_ITEMS = NAV.flatMap(s => s.items);
 
+function DynamicDocSection({ topicId, defaultTitle, children, isLight }: { topicId: string; defaultTitle: string; children: React.ReactNode; isLight: boolean }) {
+  const [customMarkdown, setCustomMarkdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 1. Check local storage cache for published admin edits first
+    if (typeof window !== "undefined") {
+      try {
+        const savedEdits = JSON.parse(localStorage.getItem("srevox_docs_edits") || "{}");
+        if (savedEdits[topicId] && savedEdits[topicId].content_markdown) {
+          setCustomMarkdown(savedEdits[topicId].content_markdown);
+          return;
+        }
+      } catch {}
+    }
+
+    // 2. Fetch from Supabase
+    async function fetchSupabaseDoc() {
+      try {
+        const { data } = await supabase.from("docs_articles").select("content_markdown").eq("id", topicId).single();
+        if (data && data.content_markdown) {
+          setCustomMarkdown(data.content_markdown);
+        }
+      } catch {}
+    }
+    fetchSupabaseDoc();
+  }, [topicId]);
+
+  if (customMarkdown) {
+    return (
+      <div className={`p-6 rounded-2xl border ${isLight ? "bg-white border-slate-200 text-slate-800" : "bg-slate-950/80 border-slate-800 text-cyan-300"} space-y-3 font-mono text-xs md:text-sm leading-relaxed shadow-sm`}>
+        <div className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-sky-400 pb-2.5 border-b border-slate-800 flex items-center justify-between">
+          <span>{defaultTitle}</span>
+          <span className="text-[9px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            ✓ Admin Edited & Published Live
+          </span>
+        </div>
+        <div className="whitespace-pre-wrap leading-relaxed">{customMarkdown}</div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
 // Full Continuous Documentation Render Component with 27 Anchors
 function FullScrollableDoc({ isLight }: { isLight: boolean }) {
   const p = `text-sm leading-7 mb-4 text-left font-normal ${isLight ? "text-slate-700" : "text-slate-400"}`;
@@ -128,83 +147,92 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
       
       {/* 1. What is Srevox */}
       <section id="what" className="scroll-mt-28">
-        <h1 className={h2}>What is Srevox?</h1>
-        <p className={p}>Srevox is a self-hosted, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
-        <Callout type="tip" isLight={isLight}>SRE + VOX — The voice of your site reliability. Srevox operates completely inside your secure network with local databases.</Callout>
-        <h3 className={h3}>Key Features</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-          {[
-            ["⚡", "Instant Detection", "Sub-5 second alerting via persistent K8s Watch API streams."],
-            ["🔔", "Multi-channel Alerts", "Structured payloads sent to Email (SMTP), Teams, Slack, and WhatsApp."],
-            ["🤖", "AI Diagnostics", "On-demand error diagnostics and YAML config patches using Groq, OpenAI, or Ollama."],
-            ["🛡️", "Noise Filtering", "Cooldown block timers, namespace exclusions, and minimum crash count threshold filters."],
-            ["☁️", "Universal Watching", "Works with EKS, GKE, AKS, bare-metal clusters, or local minikube nodes."],
-            ["🔒", "100% Private", "No remote databases, usage tracking, telemetry, or external cloud storage dependencies."]
-          ].map(([e, t, dd]) => (
-            <div key={String(t)} className={`flex gap-3.5 p-4 rounded-xl border ${cardBg}`}>
-              <span className="text-xl shrink-0">{e}</span>
-              <div>
-                <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
-                <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+        <DynamicDocSection topicId="what" defaultTitle="What is Srevox?" isLight={isLight}>
+          <h1 className={h2}>What is Srevox?</h1>
+          <p className={p}>Srevox is a self-hosted, telemetry-free Kubernetes pod crash alerting platform. It monitors your containers 24/7 using lightweight HTTP persistent event streams and delivers structured diagnostics to email, chat endpoints, and webhooks instantly.</p>
+          <Callout type="tip" isLight={isLight}>SRE + VOX — The voice of your site reliability. Srevox operates completely inside your secure network with local databases.</Callout>
+          <h3 className={h3}>Key Features</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
+            {[
+              ["⚡", "Instant Detection", "Sub-5 second alerting via persistent K8s Watch API streams."],
+              ["🔔", "Multi-channel Alerts", "Structured payloads sent to Email (SMTP), Teams, Slack, and WhatsApp."],
+              ["🤖", "AI Diagnostics", "On-demand error diagnostics and YAML config patches using Groq, OpenAI, or Ollama."],
+              ["🛡️", "Noise Filtering", "Cooldown block timers, namespace exclusions, and minimum crash count threshold filters."],
+              ["☁️", "Universal Watching", "Works with EKS, GKE, AKS, bare-metal clusters, or local minikube nodes."],
+              ["🔒", "100% Private", "No remote databases, usage tracking, telemetry, or external cloud storage dependencies."]
+            ].map(([e, t, dd]) => (
+              <div key={String(t)} className={`flex gap-3.5 p-4 rounded-xl border ${cardBg}`}>
+                <span className="text-xl shrink-0">{e}</span>
+                <div>
+                  <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
+                  <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </DynamicDocSection>
       </section>
 
       {/* 2. How it works */}
       <section id="how" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>How It Works</h1>
-        <p className={p}>Srevox interfaces directly with the Kubernetes API server using a persistent connection. The cluster agent pushes event streams the moment they register.</p>
-        <div className="space-y-4 my-6 text-left">
-          {[
-            ["1", "Go Watcher Connects", "The srevox-agent establishes a persistent Watch socket on the Kubernetes Pod API, listening for container restarts."],
-            ["2", "Event Dispatched to Redis", "Upon detecting OOMKilled or CrashLoopBackOff states, the agent serializes a JSON payload and publishes it to Redis."],
-            ["3", "Alert Worker Processes", "A lightweight alert daemon listens to Redis, filters out warning namespaces, validates cooldowns, and executes notifications."],
-            ["4", "Diagnostics Stored", "Incidents are cataloged in Postgres. Administrators can examine logs, run AI analysis, or mark them resolved."]
-          ].map(([n, t, dd]) => (
-            <div key={n} className={`flex gap-4 p-4 rounded-xl border ${cardBg}`}>
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center text-sm font-bold shrink-0">{n}</div>
-              <div>
-                <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
-                <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+        <DynamicDocSection topicId="how" defaultTitle="How It Works" isLight={isLight}>
+          <h1 className={h2}>How It Works</h1>
+          <p className={p}>Srevox interfaces directly with the Kubernetes API server using a persistent connection. The cluster agent pushes event streams the moment they register.</p>
+          <div className="space-y-4 my-6 text-left">
+            {[
+              ["1", "Go Watcher Connects", "The srevox-agent establishes a persistent Watch socket on the Kubernetes Pod API, listening for container restarts."],
+              ["2", "Event Dispatched to Redis", "Upon detecting OOMKilled or CrashLoopBackOff states, the agent serializes a JSON payload and publishes it to Redis."],
+              ["3", "Alert Worker Processes", "A lightweight alert daemon listens to Redis, filters out warning namespaces, validates cooldowns, and executes notifications."],
+              ["4", "Diagnostics Stored", "Incidents are cataloged in Postgres. Administrators can examine logs, run AI analysis, or mark them resolved."]
+            ].map(([n, t, dd]) => (
+              <div key={n} className={`flex gap-4 p-4 rounded-xl border ${cardBg}`}>
+                <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-sm font-bold shrink-0">{n}</div>
+                <div>
+                  <div className={`font-extrabold text-sm ${isLight ? "text-slate-900" : "text-white"}`}>{t}</div>
+                  <div className={`text-xs mt-1 ${isLight ? "text-slate-600" : "text-slate-500"}`}>{dd}</div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </DynamicDocSection>
       </section>
 
       {/* 3. Architecture */}
       <section id="arch" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Architecture Overview</h1>
-        <p className={p}>Srevox uses a decoupled microservices architecture designed for ultra-low memory footprint and high resilience in production environments.</p>
-        <Callout type="info" isLight={isLight}>All services communicate locally over internal Docker/Kubernetes bridge networks.</Callout>
+        <DynamicDocSection topicId="arch" defaultTitle="Architecture Overview" isLight={isLight}>
+          <h1 className={h2}>Architecture Overview</h1>
+          <p className={p}>Srevox uses a decoupled microservices architecture designed for ultra-low memory footprint and high resilience in production environments.</p>
+          <Callout type="info" isLight={isLight}>All services communicate locally over internal Docker/Kubernetes bridge networks.</Callout>
+        </DynamicDocSection>
       </section>
 
       {/* 4. Quick start */}
       <section id="qs" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Quick Start & Deployment</h1>
-        <Callout type="info" isLight={isLight}>Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
-        <div className="text-left space-y-4">
-          <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
-          <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
-          
-          <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
-          <CodeBlock isLight={isLight} code="docker compose up -d" />
+        <DynamicDocSection topicId="qs" defaultTitle="Quick Start & Deployment" isLight={isLight}>
+          <h1 className={h2}>Quick Start & Deployment</h1>
+          <Callout type="info" isLight={isLight}>Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
+          <div className="text-left space-y-4">
+            <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
+            <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
+            
+            <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
+            <CodeBlock isLight={isLight} code="docker compose up -d" />
 
-          <h3 className={h3}>Default Administrator Credentials</h3>
-          <div className={`p-4 rounded-xl border font-mono text-xs ${cardBg}`}>
-            <div><strong className="text-indigo-500">Email:</strong> admin@srevox.local</div>
-            <div><strong className="text-indigo-500">Password:</strong> admin123</div>
+            <h3 className={h3}>Default Administrator Credentials</h3>
+            <div className={`p-4 rounded-xl border font-mono text-xs ${cardBg}`}>
+              <div><strong className="text-sky-400">Email:</strong> admin@srevox.local</div>
+              <div><strong className="text-sky-400">Password:</strong> admin123</div>
+            </div>
           </div>
-        </div>
+        </DynamicDocSection>
       </section>
 
       {/* 5. Docker Compose */}
       <section id="docker-compose" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Production docker-compose.yml</h1>
-        <p className={p}>Use the full production manifest below to boot Srevox services: API, Frontend, Worker, AI Gateway, Activity service, PostgreSQL, and Redis.</p>
-        <CodeBlock isLight={isLight} code={`services:
+        <DynamicDocSection topicId="docker-compose" defaultTitle="Production docker-compose.yml" isLight={isLight}>
+          <h1 className={h2}>Production docker-compose.yml</h1>
+          <p className={p}>Use the full production manifest below to boot Srevox services: API, Frontend, Worker, AI Gateway, Activity service, PostgreSQL, and Redis.</p>
+          <CodeBlock isLight={isLight} code={`services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -223,26 +251,32 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
     image: akshatsaini08/srevox-frontend:v0.1.23
     ports:
       - "3000:3000"`} />
+        </DynamicDocSection>
       </section>
 
       {/* 6. Connect a Cluster */}
       <section id="connect" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Connecting a Kubernetes Cluster</h1>
-        <p className={p}>Srevox supports two primary methods for cluster integration: direct Service Account API Token connection (Agentless) or in-cluster Watcher Daemon (Agent).</p>
+        <DynamicDocSection topicId="connect" defaultTitle="Connecting a Kubernetes Cluster" isLight={isLight}>
+          <h1 className={h2}>Connecting a Kubernetes Cluster</h1>
+          <p className={p}>Srevox supports two primary methods for cluster integration: direct Service Account API Token connection (Agentless) or in-cluster Watcher Daemon (Agent).</p>
+        </DynamicDocSection>
       </section>
 
       {/* 7. Agent Installation */}
       <section id="agent" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Agent Installation</h1>
-        <p className={p}>Deploy the srevox-agent binary or container inside your cluster to monitor pod status events outbound.</p>
-        <CodeBlock isLight={isLight} code="kubectl apply -f https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/srevox-agent.yaml" />
+        <DynamicDocSection topicId="agent" defaultTitle="Agent Installation" isLight={isLight}>
+          <h1 className={h2}>Agent Installation</h1>
+          <p className={p}>Deploy the srevox-agent binary or container inside your cluster to monitor pod status events outbound.</p>
+          <CodeBlock isLight={isLight} code="kubectl apply -f https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/srevox-agent.yaml" />
+        </DynamicDocSection>
       </section>
 
       {/* 8. srevox-agent.yaml Manifest */}
       <section id="agent-yaml" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>srevox-agent.yaml Manifest</h1>
-        <p className={p}>Full Kubernetes ServiceAccount, ClusterRole, ClusterRoleBinding, and Deployment manifest for cluster watching.</p>
-        <CodeBlock isLight={isLight} code={`apiVersion: v1
+        <DynamicDocSection topicId="agent-yaml" defaultTitle="srevox-agent.yaml Manifest" isLight={isLight}>
+          <h1 className={h2}>srevox-agent.yaml Manifest</h1>
+          <p className={p}>Full Kubernetes ServiceAccount, ClusterRole, ClusterRoleBinding, and Deployment manifest for cluster watching.</p>
+          <CodeBlock isLight={isLight} code={`apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: srevox-agent
@@ -256,121 +290,161 @@ rules:
 - apiGroups: [""]
   resources: ["pods", "pods/log", "events", "nodes"]
   verbs: ["get", "list", "watch"]`} />
+        </DynamicDocSection>
       </section>
 
       {/* 9. Kubeconfig Method */}
       <section id="kubeconfig" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Kubeconfig Connection Method</h1>
-        <p className={p}>For remote EKS or GKE clusters, upload a sanitized Kubeconfig YAML file directly in the Clusters settings menu.</p>
+        <DynamicDocSection topicId="kubeconfig" defaultTitle="Kubeconfig Connection Method" isLight={isLight}>
+          <h1 className={h2}>Kubeconfig Connection Method</h1>
+          <p className={p}>For remote EKS or GKE clusters, upload a sanitized Kubeconfig YAML file directly in the Clusters settings menu.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 10. RBAC Permissions */}
       <section id="rbac" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>RBAC & Service Account Security</h1>
-        <p className={p}>Srevox requires read-only (<code className="text-indigo-500 font-mono font-bold">get, list, watch</code>) permissions on Pods and Events.</p>
+        <DynamicDocSection topicId="rbac" defaultTitle="RBAC & Service Account Security" isLight={isLight}>
+          <h1 className={h2}>RBAC & Service Account Security</h1>
+          <p className={p}>Srevox requires read-only (<code className="text-sky-400 font-mono font-bold">get, list, watch</code>) permissions on Pods and Events.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 11. Email / Gmail */}
       <section id="email" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Alert Channels — Email / Gmail (SMTP)</h1>
-        <p className={p}>Configure SMTP credentials to receive structured HTML crash reports directly in your engineering team inbox.</p>
+        <DynamicDocSection topicId="email" defaultTitle="Alert Channels — Email / Gmail (SMTP)" isLight={isLight}>
+          <h1 className={h2}>Alert Channels — Email / Gmail (SMTP)</h1>
+          <p className={p}>Configure SMTP credentials to receive structured HTML crash reports directly in your engineering team inbox.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 12. Microsoft Teams */}
       <section id="teams" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Alert Channels — Microsoft Teams</h1>
-        <p className={p}>Send rich Adaptive Cards into Microsoft Teams channels with single-click direct links to pod stacktraces.</p>
+        <DynamicDocSection topicId="teams" defaultTitle="Alert Channels — Microsoft Teams" isLight={isLight}>
+          <h1 className={h2}>Alert Channels — Microsoft Teams</h1>
+          <p className={p}>Send rich Adaptive Cards into Microsoft Teams channels with single-click direct links to pod stacktraces.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 13. WhatsApp */}
       <section id="whatsapp" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Alert Channels — WhatsApp Integration</h1>
-        <p className={p}>Route urgent P1 CrashLoopBackOff alerts directly to on-call engineer WhatsApp numbers via Twilio API.</p>
+        <DynamicDocSection topicId="whatsapp" defaultTitle="Alert Channels — WhatsApp Integration" isLight={isLight}>
+          <h1 className={h2}>Alert Channels — WhatsApp Integration</h1>
+          <p className={p}>Route urgent P1 CrashLoopBackOff alerts directly to on-call engineer WhatsApp numbers via Twilio API.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 14. Webhook / Slack */}
       <section id="webhook" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Alert Channels — Webhooks & Slack</h1>
-        <p className={p}>Incoming Webhooks trigger custom HTTP POST payloads to Slack or custom automation endpoints.</p>
+        <DynamicDocSection topicId="webhook" defaultTitle="Alert Channels — Webhooks & Slack" isLight={isLight}>
+          <h1 className={h2}>Alert Channels — Webhooks & Slack</h1>
+          <p className={p}>Incoming Webhooks trigger custom HTTP POST payloads to Slack or custom automation endpoints.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 15. Creating Rules */}
       <section id="rule-create" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Creating Custom Alert Rules</h1>
-        <p className={p}>Set minimum crash counts, target specific Kubernetes namespaces, and define custom alert triggers.</p>
+        <DynamicDocSection topicId="rule-create" defaultTitle="Creating Custom Alert Rules" isLight={isLight}>
+          <h1 className={h2}>Creating Custom Alert Rules</h1>
+          <p className={p}>Set minimum crash counts, target specific Kubernetes namespaces, and define custom alert triggers.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 16. Noise Control */}
       <section id="noise" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Noise Control & Global Muting</h1>
-        <p className={p}>Use cooldown block timers to prevent alert storms when a pod continuously enters CrashLoopBackOff.</p>
+        <DynamicDocSection topicId="noise" defaultTitle="Noise Control & Global Muting" isLight={isLight}>
+          <h1 className={h2}>Noise Control & Global Muting</h1>
+          <p className={p}>Use cooldown block timers to prevent alert storms when a pod continuously enters CrashLoopBackOff.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 17. Crash Reasons */}
       <section id="reasons" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Recognized Crash Reasons</h1>
-        <p className={p}>Srevox automatically categorizes OOMKilled (Exit 137), SIGSEGV (Exit 139), LivenessProbe failures, and ImagePullBackOff.</p>
+        <DynamicDocSection topicId="reasons" defaultTitle="Recognized Crash Reasons" isLight={isLight}>
+          <h1 className={h2}>Recognized Crash Reasons</h1>
+          <p className={p}>Srevox automatically categorizes OOMKilled (Exit 137), SIGSEGV (Exit 139), LivenessProbe failures, and ImagePullBackOff.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 18. AI Overview */}
       <section id="ai-overview" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>AI Incident Diagnostics Overview</h1>
-        <p className={p}>Click "Diagnose with AI" on any incident page to generate an instant root-cause breakdown and YAML fix recommendation.</p>
+        <DynamicDocSection topicId="ai-overview" defaultTitle="AI Incident Diagnostics Overview" isLight={isLight}>
+          <h1 className={h2}>AI Incident Diagnostics Overview</h1>
+          <p className={p}>Click "Diagnose with AI" on any incident page to generate an instant root-cause breakdown and YAML fix recommendation.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 19. AI Providers */}
       <section id="ai-providers" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Supported AI Providers</h1>
-        <p className={p}>Choose between Groq (ultra-fast inference), OpenAI (GPT-4o), Anthropic (Claude 3.5), or local GPU Ollama containers.</p>
+        <DynamicDocSection topicId="ai-providers" defaultTitle="Supported AI Providers" isLight={isLight}>
+          <h1 className={h2}>Supported AI Providers</h1>
+          <p className={p}>Choose between Groq (ultra-fast inference), OpenAI (GPT-4o), Anthropic (Claude 3.5), or local GPU Ollama containers.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 20. Local / Offline AI */}
       <section id="ai-local" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Local & Offline Ollama AI Setup</h1>
-        <p className={p}>Connect local GPU-enabled Ollama containers (running models like Llama 3 or CodeLlama) for 100% private, zero-egress diagnostics.</p>
+        <DynamicDocSection topicId="ai-local" defaultTitle="Local & Offline Ollama AI Setup" isLight={isLight}>
+          <h1 className={h2}>Local & Offline Ollama AI Setup</h1>
+          <p className={p}>Connect local GPU-enabled Ollama containers (running models like Llama 3 or CodeLlama) for 100% private, zero-egress diagnostics.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 21. API Authentication */}
       <section id="api-auth" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>API Authentication & Bearer Tokens</h1>
-        <p className={p}>Authenticate REST API calls using Bearer Tokens generated in Administrator Settings.</p>
-        <CodeBlock isLight={isLight} code="curl -H 'Authorization: Bearer <TOKEN>' http://localhost:4000/api/v1/incidents" />
+        <DynamicDocSection topicId="api-auth" defaultTitle="API Authentication & Bearer Tokens" isLight={isLight}>
+          <h1 className={h2}>API Authentication & Bearer Tokens</h1>
+          <p className={p}>Authenticate REST API calls using Bearer Tokens generated in Administrator Settings.</p>
+          <CodeBlock isLight={isLight} code="curl -H 'Authorization: Bearer <TOKEN>' http://localhost:4000/api/v1/incidents" />
+        </DynamicDocSection>
       </section>
 
       {/* 22. API Incidents */}
       <section id="api-incidents" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>API Endpoints — Incidents</h1>
-        <p className={p}>Query, filter, or resolve active cluster incidents programmatically via REST API endpoints.</p>
+        <DynamicDocSection topicId="api-incidents" defaultTitle="API Endpoints — Incidents" isLight={isLight}>
+          <h1 className={h2}>API Endpoints — Incidents</h1>
+          <p className={p}>Query, filter, or resolve active cluster incidents programmatically via REST API endpoints.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 23. API Clusters */}
       <section id="api-clusters" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>API Endpoints — Clusters</h1>
-        <p className={p}>Register new Kubernetes clusters, update API bearer tokens, or query node health metrics.</p>
+        <DynamicDocSection topicId="api-clusters" defaultTitle="API Endpoints — Clusters" isLight={isLight}>
+          <h1 className={h2}>API Endpoints — Clusters</h1>
+          <p className={p}>Register new Kubernetes clusters, update API bearer tokens, or query node health metrics.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 24. Test via Redis */}
       <section id="k8s-redis" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Testing Alert Pipeline via Redis</h1>
-        <p className={p}>Publish test incident payloads directly to Redis pub/sub channel to verify alerting rules without crashing real pods.</p>
+        <DynamicDocSection topicId="k8s-redis" defaultTitle="Testing Alert Pipeline via Redis" isLight={isLight}>
+          <h1 className={h2}>Testing Alert Pipeline via Redis</h1>
+          <p className={p}>Publish test incident payloads directly to Redis pub/sub channel to verify alerting rules without crashing real pods.</p>
+        </DynamicDocSection>
       </section>
 
       {/* 25. Simulate Pod Crash */}
       <section id="k8s-crash" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Simulating Pod Crashes</h1>
-        <p className={p}>Verify Srevox alerts by deploying a test container that exits with code 139 or OOMKilled states.</p>
-        <CodeBlock isLight={isLight} code="kubectl run test-crash --image=busybox --restart=Never -- sh -c 'exit 1'" />
+        <DynamicDocSection topicId="k8s-crash" defaultTitle="Simulating Pod Crashes" isLight={isLight}>
+          <h1 className={h2}>Simulating Pod Crashes</h1>
+          <p className={p}>Verify Srevox alerts by deploying a test container that exits with code 139 or OOMKilled states.</p>
+          <CodeBlock isLight={isLight} code="kubectl run test-crash --image=busybox --restart=Never -- sh -c 'exit 1'" />
+        </DynamicDocSection>
       </section>
 
       {/* 26. Run Go Watcher */}
       <section id="k8s-watcher" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Running the Go Watcher Service</h1>
-        <p className={p}>Run the srevox-agent Go binary directly from source code during local development.</p>
+        <DynamicDocSection topicId="k8s-watcher" defaultTitle="Running the Go Watcher Service" isLight={isLight}>
+          <h1 className={h2}>Running the Go Watcher Service</h1>
+          <p className={p}>Run the srevox-agent Go binary directly from source code during local development.</p>
+        </DynamicDocSection>
       </section>
+
       {/* 27. Full Cluster Setup */}
       <section id="k8s-full" className="scroll-mt-28 pt-8 border-t border-slate-200/60 dark:border-slate-900/60">
-        <h1 className={h2}>Full Multi-Cluster Production Setup</h1>
-        <p className={p}>Complete guide for deploying Srevox across production EKS, GKE, and bare-metal Kubernetes environments.</p>
+        <DynamicDocSection topicId="k8s-full" defaultTitle="Full Multi-Cluster Production Setup" isLight={isLight}>
+          <h1 className={h2}>Full Multi-Cluster Production Setup</h1>
+          <p className={p}>Complete guide for deploying Srevox across production EKS, GKE, and bare-metal Kubernetes environments.</p>
+        </DynamicDocSection>
       </section>
 
     </div>
@@ -385,6 +459,22 @@ export default function DocsPage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<"yes" | "no" | null>(null);
   const [readingMode, setReadingMode] = useState(false);
+  const [dynamicNav, setDynamicNav] = useState(NAV);
+
+  useEffect(() => {
+    async function loadDynamicNav() {
+      const data = await getDynamicDocsData();
+      if (data && data.length > 0) {
+        // Map icon strings to Lucide components if needed
+        const mapped = data.map(cat => ({
+          ...cat,
+          icon: cat.icon === "Server" ? Server : cat.icon === "Bell" ? Bell : cat.icon === "Shield" ? Shield : cat.icon === "Zap" ? Zap : cat.icon === "Code" ? Code : cat.icon === "Terminal" ? Terminal : BookOpen
+        }));
+        setDynamicNav(mapped);
+      }
+    }
+    loadDynamicNav();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -453,29 +543,35 @@ export default function DocsPage() {
     }
   };
 
-  const filtered = search ? NAV.map(s => ({ ...s, items: s.items.filter(i => i.title.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0) : NAV;
+  const filtered = search ? dynamicNav.map(s => ({ ...s, items: s.items.filter(i => i.title.toLowerCase().includes(search.toLowerCase())) })).filter(s => s.items.length > 0) : dynamicNav;
 
   return (
-    <div suppressHydrationWarning className={`min-h-screen font-sans selection:bg-indigo-500/30 overflow-x-hidden relative transition-colors duration-300 ${
-      isLight ? "bg-[#f8fafc] text-slate-800" : "bg-[#070913] text-slate-200 bg-grid-pattern"
+    <div suppressHydrationWarning className={`min-h-screen font-sans selection:bg-sky-500/30 overflow-x-hidden relative transition-colors duration-300 ${
+      isLight ? "bg-[#f8fafc] text-slate-800" : "bg-[#030712] text-slate-200"
     }`}>
       
-      {/* Decorative Orbs (Fixed DOM node structure for SSR/CSR hydration match) */}
-      <div className={`absolute top-[-100px] left-[5%] w-[400px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none animate-float z-0 ${isLight ? "hidden" : ""}`} />
-      <div className={`absolute bottom-[100px] right-[5%] w-[450px] h-[450px] bg-cyan-500/5 rounded-full blur-[140px] pointer-events-none animate-float-reverse z-0 ${isLight ? "hidden" : ""}`} />
+      {/* Decorative Orbs & Production Spotlights */}
+      <div className={`fixed inset-0 pointer-events-none z-0 overflow-hidden ${isLight ? "hidden" : ""}`}>
+        <div className="absolute top-[-100px] left-[5%] w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[160px] pointer-events-none animate-float" />
+        <div className="absolute bottom-[100px] right-[5%] w-[550px] h-[550px] bg-cyan-500/8 rounded-full blur-[160px] pointer-events-none animate-float-reverse" />
+        <div className="absolute inset-0 bg-grid-pattern opacity-25" />
+      </div>
 
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 h-20 flex items-center px-6 gap-6 justify-between border-b transition-all duration-300 ${
         readingMode ? "opacity-0 pointer-events-none -translate-y-full" : "opacity-100"
       } ${
-        isLight ? "bg-white/80 backdrop-blur-xl border-slate-200" : "bg-[#070913]/70 backdrop-blur-xl border-slate-900/60"
+        isLight ? "bg-white/85 backdrop-blur-2xl border-slate-200/80" : "bg-[#030712]/85 backdrop-blur-2xl border-slate-800/60 text-white shadow-2xl shadow-sky-950/20"
       }`}>
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 no-underline">
-            <SrevoxLogo size={32} />
-            <span className={`font-extrabold text-lg tracking-tight leading-none flex items-center gap-2 ${isLight ? "text-slate-900" : "text-white"}`}>
+          <Link href="/" className="flex items-center gap-3 no-underline group">
+            <div className="relative">
+              <div className="absolute inset-0 bg-sky-500/20 rounded-full blur-md group-hover:bg-sky-400/30 transition-all" />
+              <SrevoxLogo size={32} className="relative group-hover:scale-105 transition-transform" />
+            </div>
+            <span className={`font-black text-lg tracking-tight leading-none flex items-center gap-2 ${isLight ? "text-slate-900" : "text-white"}`}>
               Srevox Docs
-              <span className="px-2 py-0.5 text-[9px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full font-mono">
+              <span className="px-2 py-0.5 text-[9px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-full font-mono">
                 v0.1.23
               </span>
             </span>
@@ -490,11 +586,11 @@ export default function DocsPage() {
             className={`text-xs font-bold transition-all flex items-center gap-1.5 rounded-xl px-3.5 py-2 cursor-pointer ${
               isLight 
                 ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200" 
-                : "bg-slate-900/60 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                : "bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-800"
             }`}
             title="Focus Reading Mode (Distraction-Free)"
           >
-            <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+            <BookOpen className="w-3.5 h-3.5 text-sky-400" />
             <span className="hidden sm:inline">Reading Mode</span>
           </button>
 
@@ -505,14 +601,14 @@ export default function DocsPage() {
             className={`p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               isLight 
                 ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" 
-                : "bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800"
+                : "bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800"
             }`}
             title={mounted ? `Switch to ${isLight ? "Dark" : "Light"} Theme (Docs Only)` : "Switch Theme"}
           >
             {mounted ? (
               isLight ? (
                 <>
-                  <Moon className="w-4 h-4 text-indigo-500" />
+                  <Moon className="w-4 h-4 text-sky-600" />
                   <span className="hidden md:inline">Dark</span>
                 </>
               ) : (
@@ -529,17 +625,17 @@ export default function DocsPage() {
             )}
           </button>
 
-          <Link href="/feedback" className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-2">
+          <Link href="/feedback" className="text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-2">
             <MessageSquare className="w-3.5 h-3.5" /> Feedback
           </Link>
           <Link href="/" className={`text-xs font-bold transition-colors flex items-center gap-1.5 border rounded-xl px-4 py-2 ${
-            isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" : "bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white"
+            isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" : "bg-slate-900/80 border-slate-800 text-slate-300 hover:text-white"
           }`}>
             <ArrowLeft className="w-3.5 h-3.5" /> Home
           </Link>
           <button 
             onClick={() => setMobileNav(!mobileNav)} 
-            className="md:hidden w-10 h-10 border border-slate-800 bg-slate-900/30 flex items-center justify-center rounded-xl cursor-pointer text-slate-400 hover:text-white"
+            className="md:hidden w-10 h-10 border border-slate-800 bg-slate-900/50 flex items-center justify-center rounded-xl cursor-pointer text-slate-400 hover:text-white"
           >
             {mobileNav ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -555,7 +651,7 @@ export default function DocsPage() {
         } ${
           mobileNav ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } ${
-          isLight ? "bg-white/90 border-slate-200 backdrop-blur-md" : "bg-[#070913]/90 md:bg-[#070913]/40 border-slate-900/60 backdrop-blur-md"
+          isLight ? "bg-white/90 border-slate-200 backdrop-blur-xl" : "bg-[#030712]/90 border-slate-800/80 backdrop-blur-2xl text-slate-200"
         }`}>
           {/* Search */}
           <div className={`p-4 border-b ${isLight ? "border-slate-200" : "border-slate-900/60"}`}>
@@ -566,8 +662,8 @@ export default function DocsPage() {
                 placeholder="Search guide..."
                 value={search} 
                 onChange={e => setSearch(e.target.value)}
-                className={`w-full border rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-sans ${
-                  isLight ? "bg-slate-100 border-slate-200 text-slate-900 placeholder-slate-400" : "bg-[#070913] border-slate-800 text-white placeholder-slate-600"
+                className={`w-full border rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all font-sans ${
+                  isLight ? "bg-slate-100 border-slate-200 text-slate-900 placeholder-slate-400" : "bg-[#030712] border-slate-800 text-white placeholder-slate-600"
                 }`}
               />
             </div>
@@ -583,13 +679,13 @@ export default function DocsPage() {
                     onClick={() => handleSectionClick(s)} 
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all duration-200 cursor-pointer ${
                       isSectionOpen 
-                        ? (isLight ? "bg-slate-100 text-indigo-600 font-bold" : "bg-slate-900/30 text-white") 
+                        ? (isLight ? "bg-slate-100 text-sky-600 font-bold" : "bg-slate-900/30 text-white") 
                         : (isLight ? "text-slate-600 hover:bg-slate-100 hover:text-slate-900" : "text-slate-400 hover:bg-slate-900/40 hover:text-white")
                     }`}
                   >
-                    <s.icon className={`w-4 h-4 shrink-0 transition-colors duration-200 ${isSectionOpen ? "text-indigo-500" : "text-slate-400"}`} />
+                    <s.icon className={`w-4 h-4 shrink-0 transition-colors duration-200 ${isSectionOpen ? "text-sky-400" : "text-slate-400"}`} />
                     <span className="flex-1 text-[10px] font-black uppercase tracking-wider">{s.title}</span>
-                    <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isSectionOpen ? "rotate-90 text-indigo-500" : "text-slate-400"}`} />
+                    <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isSectionOpen ? "rotate-90 text-sky-400" : "text-slate-400"}`} />
                   </button>
                   {isSectionOpen && (
                     <div className={`ml-5 border-l pl-3.5 py-1 space-y-1 text-left relative ${isLight ? "border-slate-200" : "border-slate-900"}`}>
@@ -601,7 +697,7 @@ export default function DocsPage() {
                             onClick={() => scrollToTopic(item.id)} 
                             className={`w-full text-left py-1.5 px-3 rounded-lg text-xs transition-all duration-200 cursor-pointer relative ${
                               isItemActive 
-                                ? (isLight ? "bg-indigo-50 text-indigo-600 font-black border-l-2 border-indigo-600 pl-2 rounded-l-none" : "bg-indigo-500/10 text-indigo-300 font-extrabold border-l-2 border-indigo-500 pl-2 rounded-l-none")
+                                ? (isLight ? "bg-sky-50 text-sky-600 font-black border-l-2 border-sky-600 pl-2 rounded-l-none" : "bg-sky-500/10 text-sky-300 font-extrabold border-l-2 border-sky-500 pl-2 rounded-l-none")
                                 : (isLight ? "text-slate-500 hover:text-slate-900 hover:bg-slate-100" : "text-slate-500 hover:text-slate-200 hover:bg-slate-900/20")
                             }`}
                           >
@@ -641,8 +737,8 @@ export default function DocsPage() {
               </div>
               <div className="flex items-center gap-3">
                 {feedbackSubmitted ? (
-                  <div className="text-xs text-indigo-500 font-bold flex items-center gap-1.5 animate-pulse">
-                    <CheckCircle className="w-4 h-4 text-indigo-500" />
+                  <div className="text-xs text-sky-400 font-bold flex items-center gap-1.5 animate-pulse">
+                    <CheckCircle className="w-4 h-4 text-sky-400" />
                     <span>Thank you for your feedback!</span>
                   </div>
                 ) : (
@@ -650,7 +746,7 @@ export default function DocsPage() {
                     <button 
                       onClick={() => setFeedbackSubmitted("yes")}
                       className={`px-4 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-indigo-600/10 hover:text-indigo-400"
+                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-sky-50 hover:text-sky-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-sky-500/10 hover:text-sky-400"
                       }`}
                     >
                       Yes
@@ -658,7 +754,7 @@ export default function DocsPage() {
                     <button 
                       onClick={() => setFeedbackSubmitted("no")}
                       className={`px-4 py-2 border text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-indigo-600/10 hover:text-indigo-400"
+                        isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-sky-50 hover:text-sky-600" : "bg-slate-900/40 border-slate-800 text-slate-300 hover:bg-sky-500/10 hover:text-sky-400"
                       }`}
                     >
                       No
@@ -675,10 +771,10 @@ export default function DocsPage() {
                 <span className={`font-bold ${isLight ? "text-slate-700" : "text-slate-400"}`}>Srevox Docs</span>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
-                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
-                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Setup Guide</a>
-                <a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Discord</a>
-                <a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Twitter</a>
+                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">GitHub</a>
+                <a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">Setup Guide</a>
+                <a href="https://discord.gg/your-discord" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">Discord</a>
+                <a href="https://x.com/srevox" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">Twitter</a>
               </div>
             </div>
           </div>
@@ -687,10 +783,10 @@ export default function DocsPage() {
         {/* Right-Side Minimap TOC (Halved Height with Auto-Scroll & Modern Title "IN THIS GUIDE") */}
         {!readingMode && (
           <aside id="minimap-sidebar-aside" className={`w-60 hidden xl:block fixed top-24 right-6 max-h-[380px] overflow-y-auto custom-scrollbar p-4 rounded-2xl border text-left shrink-0 z-30 transition-all duration-300 shadow-xl ${
-            isLight ? "bg-white/95 border-slate-200 backdrop-blur-md" : "bg-[#070913]/95 border-slate-900/80 backdrop-blur-md"
+            isLight ? "bg-white/95 border-slate-200 backdrop-blur-md" : "bg-[#030712]/95 border-slate-800 backdrop-blur-2xl text-slate-200"
           }`}>
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-3 pb-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-sky-400 mb-3 pb-2.5 border-b border-slate-200/60 dark:border-slate-800/60">
+              <Sparkles className="w-3.5 h-3.5 text-sky-400" />
               <span>IN THIS GUIDE</span>
             </div>
             <ul className="space-y-1 text-xs">
@@ -704,7 +800,7 @@ export default function DocsPage() {
                       onClick={() => scrollToTopic(item.id)}
                       className={`w-full text-left py-1.5 px-2.5 rounded-lg transition-all duration-150 cursor-pointer ${
                         isActive
-                          ? (isLight ? "bg-indigo-50 text-indigo-600 font-extrabold border-l-2 border-indigo-600 pl-2 rounded-l-none" : "bg-indigo-500/10 text-indigo-400 font-extrabold border-l-2 border-indigo-500 pl-2 rounded-l-none")
+                          ? (isLight ? "bg-sky-50 text-sky-600 font-extrabold border-l-2 border-sky-600 pl-2 rounded-l-none" : "bg-sky-500/10 text-sky-400 font-extrabold border-l-2 border-sky-500 pl-2 rounded-l-none")
                           : (isLight ? "text-slate-500 hover:text-slate-900 hover:bg-slate-100" : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/40")
                       }`}
                     >
@@ -725,7 +821,7 @@ export default function DocsPage() {
           <button
             type="button"
             onClick={() => setReadingMode(false)}
-            className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-2xl flex items-center gap-2 border border-indigo-400/40 cursor-pointer active:scale-95 transition-all"
+            className="px-5 py-3 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-2xl flex items-center gap-2 border border-sky-400/40 cursor-pointer active:scale-95 transition-all"
           >
             <Eye className="w-4 h-4" />
             <span>Exit Reading Mode (Esc)</span>
