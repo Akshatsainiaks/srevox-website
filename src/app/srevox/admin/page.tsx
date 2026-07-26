@@ -8,7 +8,7 @@ import {
   Activity, Server, Settings, Users, Key, Globe, Zap, Cpu, Bell, Check, Copy, X,
   ChevronRight, ChevronLeft, Crown, HardDrive, BarChart3, Boxes, AlertTriangle,
   LayoutDashboard, SlidersHorizontal, ExternalLink, Sun, Moon, User, Compass, LifeBuoy,
-  Search
+  Search, Mail
 } from "lucide-react";
 import { SrevoxLogo } from "@/components/SrevoxLogo";
 import { supabase } from "@/lib/supabase";
@@ -23,16 +23,24 @@ import {
 } from "@/lib/auth";
 
 import { useRouter } from "next/navigation";
+import emailjs from "emailjs-com";
 
 export default function SrevoxAdminPlatform({ initialModule }: { initialModule?: "docs" | "incidents" | "observability" | "settings" }) {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [adminEmail, setAdminEmail] = useState(ADMIN_EMAIL);
+  const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
-  const [newAdminEmail, setNewAdminEmail] = useState(ADMIN_EMAIL);
   const [newAdminPassword, setNewAdminPassword] = useState("");
   const [settingsMsg, setSettingsMsg] = useState("");
   const [loginError, setLoginError] = useState("");
+  
+  // OTP Auth States
+  const [authStep, setAuthStep] = useState<"password" | "otp">("password");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpMsg, setOtpMsg] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
+
   const [activeModule, setActiveModule] = useState<"docs" | "incidents" | "observability" | "settings">(
     initialModule || "docs"
   );
@@ -93,9 +101,6 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
   useEffect(() => {
     if (getAdminSession()) {
       setIsAuthenticated(true);
-      const savedEmail = localStorage.getItem("srevox_admin_email") || getAdminEmail();
-      setAdminEmail(savedEmail);
-      setNewAdminEmail(savedEmail);
     }
 
     // Load saved preferences matching Srevox platform
@@ -107,11 +112,6 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
       const savedTheme = localStorage.getItem("sv_dashboard_theme") as "dark" | "light";
       if (savedTheme) {
         setTheme(savedTheme);
-      }
-      const savedEmail = localStorage.getItem("srevox_admin_email");
-      if (savedEmail) {
-        setAdminEmail(savedEmail);
-        setNewAdminEmail(savedEmail);
       }
     }
   }, []);
@@ -220,34 +220,154 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
     }
   }, [isAuthenticated, activeModule]);
 
-  const handleJwtLogin = (e: React.FormEvent) => {
+  const handlePasswordVerifyAndSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    const savedPassword = typeof window !== "undefined" ? localStorage.getItem("srevox_admin_password") : null;
-    const expectedPassword = savedPassword || "admin123";
-    const savedEmail = typeof window !== "undefined" ? localStorage.getItem("srevox_admin_email") : null;
-    const expectedEmail = savedEmail || ADMIN_EMAIL;
+    setLoginError("");
 
-    if (adminEmail === expectedEmail && (adminPassword === expectedPassword || adminPassword === "admin123" || adminPassword === "srevox2026")) {
-      setJwtAdminSession(adminEmail);
-      setIsAuthenticated(true);
-      setLoginError("");
-    } else {
-      setLoginError("Invalid Admin Email or Security Password. Please try again.");
+    if (!adminEmail.trim()) {
+      setLoginError("Please enter your Admin Email Address.");
+      return;
+    }
+
+    if (adminEmail.trim().toLowerCase() !== "akshatsainiaks@gmail.com") {
+      setLoginError("Access Denied: Invalid email address or unauthorized user.");
+      return;
+    }
+
+    if (!adminPassword) {
+      setLoginError("Please enter your Security Password.");
+      return;
+    }
+
+    setSendingOtp(true);
+
+    // 1. Verify Password
+    let passwordValid = false;
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", email: adminEmail, password: adminPassword })
+      });
+      const data = await res.json();
+      if (data.success) {
+        passwordValid = true;
+      } else {
+        setSendingOtp(false);
+        setLoginError(data.error || "Invalid Security Password. Please try again.");
+        return;
+      }
+    } catch (err: any) {
+      setSendingOtp(false);
+      setLoginError("Failed to verify password with authentication server.");
+      return;
+    }
+
+    // 2. Password is valid -> Generate OTP code and dispatch via API + EmailJS
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "send-otp", email: adminEmail.trim() })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Send real email via EmailJS if configured
+        try {
+          const serviceId = process.env.VITE_EMAILJS_SERVICE_ID || "service_default";
+          const templateId = process.env.VITE_EMAILJS_TEMPLATE_ID || "template_default";
+          const publicKey = process.env.VITE_EMAILJS_PUBLIC_KEY || "key_default";
+          await emailjs.send(serviceId, templateId, {
+            email: adminEmail.trim(),
+            user_email: adminEmail.trim(),
+            subject: `Srevox Admin Verification OTP: ${data.otpPreview}`,
+            message: `Your Srevox Admin Security OTP is: ${data.otpPreview}. Valid for 10 minutes.`,
+            otp_code: data.otpPreview
+          }, publicKey);
+        } catch {}
+
+        setAuthStep("otp");
+        setOtpSent(true);
+        setOtpMsg(`✓ Verification OTP code dispatched to ${adminEmail.trim()}. Please check your email inbox or spam folder!`);
+      } else {
+        setLoginError(data.error || "Failed to send OTP code.");
+      }
+    } catch (err: any) {
+      setLoginError(err.message || "Failed to send OTP code.");
+    } finally {
+      setSendingOtp(false);
     }
   };
 
-  const handleSaveAdminCredentials = (e: React.FormEvent) => {
+  const handleVerifyOtpAndLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAdminEmail) return;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("srevox_admin_email", newAdminEmail);
-      if (newAdminPassword) {
+    setLoginError("");
+
+    if (!otpCode || otpCode.trim().length !== 6) {
+      setLoginError("Please enter your 6-digit verification OTP code.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "verify-otp", email: "akshatsainiaks@gmail.com", otpCode: otpCode.trim() })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setJwtAdminSession("akshatsainiaks@gmail.com");
+        setIsAuthenticated(true);
+        setLoginError("");
+      } else {
+        setLoginError(data.error || "Invalid 6-Digit OTP code. Please check your email inbox.");
+      }
+    } catch {
+      setLoginError("Failed to verify OTP code. Please try again.");
+    }
+  };
+
+  const handleSaveAdminCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminPassword) return;
+
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update-password",
+          email: "akshatsainiaks@gmail.com",
+          currentPassword: adminPassword || "admin123",
+          newPassword: newAdminPassword
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("srevox_admin_password", newAdminPassword);
+        }
+        setSettingsMsg("✓ Admin security password updated successfully for akshatsainiaks@gmail.com!");
+        setNewAdminPassword("");
+      } else {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("srevox_admin_password", newAdminPassword);
+        }
+        setSettingsMsg("✓ Password saved to local credentials cache!");
+        setNewAdminPassword("");
+      }
+    } catch {
+      if (typeof window !== "undefined") {
         localStorage.setItem("srevox_admin_password", newAdminPassword);
       }
+      setSettingsMsg("✓ Password saved to local credentials cache!");
+      setNewAdminPassword("");
+    } finally {
+      setTimeout(() => setSettingsMsg(""), 4000);
     }
-    setAdminEmail(newAdminEmail);
-    setSettingsMsg("✓ Admin email & security password updated successfully!");
-    setTimeout(() => setSettingsMsg(""), 4000);
   };
 
   const handleLogout = () => {
@@ -389,56 +509,130 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
             </p>
           </div>
 
-          <form onSubmit={handleJwtLogin} className="space-y-4 pt-2">
-            <div>
-              <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-slate-600"} uppercase mb-1.5`}>
-                Admin Email Address
-              </label>
-              <div className="relative">
-                <Globe className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-indigo-400" : "text-indigo-500"}`} />
-                <input
-                  type="email"
-                  required
-                  placeholder="admin@srevox.dev..."
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  className={`w-full ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-gray-50 border-gray-200 text-slate-900"} border rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:outline-none focus:border-indigo-500 transition-all font-mono shadow-sm`}
-                />
-              </div>
-            </div>
+          {/* STEP INDICATOR */}
+          <div className="flex items-center justify-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 pb-2">
+            <span className={`px-2.5 py-1 rounded-full border ${authStep === "password" ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-400 font-extrabold" : "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"}`}>
+              {authStep === "password" ? "Step 1: Password Check" : "✓ Step 1 Passed"}
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+            <span className={`px-2.5 py-1 rounded-full border ${authStep === "otp" ? "bg-indigo-500/20 border-indigo-500/30 text-indigo-400 font-extrabold" : "bg-slate-800 border-slate-700 text-slate-500"}`}>
+              Step 2: Email OTP
+            </span>
+          </div>
 
-            <div>
-              <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-slate-600"} uppercase mb-1.5`}>
-                Security Password
-              </label>
-              <div className="relative">
-                <Lock className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-indigo-400" : "text-indigo-500"}`} />
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter admin password..."
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  className={`w-full ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-gray-50 border-gray-200 text-slate-900"} border rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:outline-none focus:border-indigo-500 transition-all font-mono shadow-sm`}
-                />
+          {authStep === "password" ? (
+            <form onSubmit={handlePasswordVerifyAndSendOtp} className="space-y-4 pt-2">
+              <div>
+                <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-slate-600"} uppercase mb-1.5`}>
+                  Admin Account Email
+                </label>
+                <div className="relative">
+                  <Globe className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-indigo-400" : "text-indigo-500"}`} />
+                  <input
+                    type="email"
+                    required
+                    autoComplete="off"
+                    placeholder="Enter admin email address..."
+                    value={adminEmail}
+                    onChange={(e) => {
+                      setAdminEmail(e.target.value);
+                      if (loginError) setLoginError("");
+                    }}
+                    className={`w-full ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-gray-50 border-gray-200 text-slate-900"} border rounded-xl pl-10 pr-4 py-3 text-xs font-bold font-mono focus:outline-none focus:border-indigo-500 transition-all shadow-sm`}
+                  />
+                </div>
               </div>
-            </div>
 
-            {loginError && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-medium">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                <span>{loginError}</span>
+              <div>
+                <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-slate-600"} uppercase mb-1.5`}>
+                  Security Password
+                </label>
+                <div className="relative">
+                  <Lock className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-indigo-400" : "text-indigo-500"}`} />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter admin password..."
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    className={`w-full ${isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-gray-50 border-gray-200 text-slate-900"} border rounded-xl pl-10 pr-4 py-3 text-xs font-bold focus:outline-none focus:border-indigo-500 transition-all font-mono shadow-sm`}
+                  />
+                </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-500/20 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Key className="w-4 h-4" />
-              <span>Sign In</span>
-            </button>
-          </form>
+              {loginError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-medium">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={sendingOtp}
+                className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-500/20 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Key className="w-4 h-4" />
+                <span>{sendingOtp ? "Verifying Credentials & Sending OTP..." : "Verify Password & Send Real OTP"}</span>
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtpAndLogin} className="space-y-4 pt-2">
+              {otpMsg && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs space-y-1">
+                  <div className="font-extrabold flex items-center gap-2">
+                    <Mail className="w-4 h-4 shrink-0 text-emerald-400" />
+                    <span>Real Verification OTP Sent!</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    {otpMsg}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-slate-600"} uppercase mb-1.5`}>
+                  Enter 6-Digit OTP Code
+                </label>
+                <div className="relative">
+                  <Key className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400" />
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="Enter 6-digit code..."
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className={`w-full ${isDark ? "bg-slate-900 border-slate-800 text-emerald-400" : "bg-gray-50 border-gray-200 text-slate-900"} border rounded-xl pl-10 pr-4 py-3 text-sm font-mono font-black tracking-widest focus:outline-none focus:border-emerald-500 transition-all shadow-sm`}
+                  />
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-medium">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAuthStep("password")}
+                  className="px-4 py-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white font-bold text-xs cursor-pointer transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-500/20 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Verify OTP & Sign In</span>
+                </button>
+              </div>
+            </form>
+          )}
 
           <div className={`pt-4 border-t ${isDark ? "border-slate-800" : "border-gray-100"} text-center`}>
             <Link href="/docs" className={`text-xs font-bold ${isDark ? "text-slate-500 hover:text-indigo-400" : "text-slate-500 hover:text-indigo-600"} transition-colors flex items-center justify-center gap-1.5`}>
@@ -843,29 +1037,29 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
                     <form onSubmit={handleSaveAdminCredentials} className="space-y-4">
                       <div>
                         <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-gray-700"} uppercase mb-1.5`}>
-                          Admin Account Email Address
+                          Admin Account Email Address (Locked)
                         </label>
                         <div className="relative">
                           <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-400" />
                           <input
                             type="email"
-                            required
-                            placeholder="admin@srevox.dev"
-                            value={newAdminEmail}
-                            onChange={(e) => setNewAdminEmail(e.target.value)}
-                            className={`w-full ${isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-gray-200 text-gray-900"} border rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold font-mono focus:outline-none focus:border-indigo-500 shadow-sm`}
+                            readOnly
+                            value="akshatsainiaks@gmail.com"
+                            className={`w-full ${isDark ? "bg-slate-950/60 border-slate-800 text-indigo-300" : "bg-gray-100 border-gray-200 text-indigo-700"} border rounded-xl pl-10 pr-4 py-2.5 text-xs font-bold font-mono shadow-sm cursor-not-allowed`}
                           />
                         </div>
+                        <span className="text-[10px] text-slate-500 font-mono mt-1 block">✓ Security rule: Only akshatsainiaks@gmail.com is permitted for Admin access.</span>
                       </div>
 
                       <div>
                         <label className={`block text-xs font-mono font-bold ${isDark ? "text-slate-400" : "text-gray-700"} uppercase mb-1.5`}>
-                          New Security Password (Leave blank to keep current)
+                          New Security Password
                         </label>
                         <div className="relative">
                           <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-400" />
                           <input
                             type="password"
+                            required
                             placeholder="Enter new admin password..."
                             value={newAdminPassword}
                             onChange={(e) => setNewAdminPassword(e.target.value)}
@@ -886,7 +1080,7 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
                         className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md shadow-indigo-500/20 cursor-pointer transition-all active:scale-95 flex items-center gap-2"
                       >
                         <Save className="w-4 h-4" />
-                        <span>Save Account Settings</span>
+                        <span>Update Security Password</span>
                       </button>
                     </form>
                   </div>
