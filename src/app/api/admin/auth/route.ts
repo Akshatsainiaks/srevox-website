@@ -8,10 +8,8 @@ export const ALLOWED_ADMIN_EMAIL = "akshatsainiaks@gmail.com";
 let cachedPassword: string | null = null;
 let otpStore: { code: string; expiresAt: number } | null = null;
 
-// Fetch admin password from Supabase table 'srevox_admin_config'
+// Fetch admin password directly from Supabase table 'srevox_admin_config'
 async function getStoredAdminPassword(): Promise<string> {
-  if (cachedPassword) return cachedPassword;
-
   try {
     const { data } = await supabase
       .from("srevox_admin_config")

@@ -273,7 +273,6 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
       const data = await res.json();
 
       if (data.success) {
-        // Send real email via EmailJS if configured
         try {
           const serviceId = process.env.VITE_EMAILJS_SERVICE_ID || "service_default";
           const templateId = process.env.VITE_EMAILJS_TEMPLATE_ID || "template_default";
@@ -289,7 +288,43 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
 
         setAuthStep("otp");
         setOtpSent(true);
-        setOtpMsg(`✓ Verification OTP code dispatched to ${adminEmail.trim()}. Please check your email inbox or spam folder!`);
+        setOtpMsg(`✓ Verification OTP code sent to ${adminEmail.trim()}. Please check your email inbox or spam folder!`);
+      } else {
+        setLoginError(data.error || "Failed to send OTP code.");
+      }
+    } catch (err: any) {
+      setLoginError(err.message || "Failed to send OTP code.");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleDirectSendOtp = async () => {
+    if (!adminEmail.trim()) {
+      setLoginError("Please enter your Admin Email Address.");
+      return;
+    }
+
+    if (adminEmail.trim().toLowerCase() !== "akshatsainiaks@gmail.com") {
+      setLoginError("Access Denied: Invalid email address or unauthorized user.");
+      return;
+    }
+
+    setSendingOtp(true);
+    setLoginError("");
+
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "send-otp", email: adminEmail.trim() })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setAuthStep("otp");
+        setOtpSent(true);
+        setOtpMsg(`✓ Verification OTP code sent to ${adminEmail.trim()}. Please check your email inbox or spam folder!`);
       } else {
         setLoginError(data.error || "Failed to send OTP code.");
       }
@@ -573,7 +608,23 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
                 className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-500/20 cursor-pointer transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Key className="w-4 h-4" />
-                <span>{sendingOtp ? "Verifying Credentials & Sending OTP..." : "Verify Password & Send Real OTP"}</span>
+                <span>{sendingOtp ? "Verifying & Sending OTP..." : "Verify Password & Send OTP"}</span>
+              </button>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-800"></div>
+                <span className="flex-shrink mx-3 text-[10px] font-mono font-bold text-slate-500 uppercase">Or</span>
+                <div className="flex-grow border-t border-slate-800"></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDirectSendOtp}
+                disabled={sendingOtp}
+                className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sky-400 font-bold text-xs cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Mail className="w-4 h-4 text-sky-400" />
+                <span>{sendingOtp ? "Sending OTP..." : "Send OTP Code directly to Mail"}</span>
               </button>
             </form>
           ) : (
@@ -582,7 +633,7 @@ export default function SrevoxAdminPlatform({ initialModule }: { initialModule?:
                 <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs space-y-1">
                   <div className="font-extrabold flex items-center gap-2">
                     <Mail className="w-4 h-4 shrink-0 text-emerald-400" />
-                    <span>Real Verification OTP Sent!</span>
+                    <span>Verification OTP Sent!</span>
                   </div>
                   <p className="text-[11px] text-slate-300 leading-relaxed">
                     {otpMsg}
