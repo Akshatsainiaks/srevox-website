@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { 
-  Compass, Mail, MessageSquare, Plus, Zap, Code, Shield, CheckCircle, 
+  Compass, Mail, MessageSquare, Plus, Zap, Code, Shield, CheckCircle, CheckCircle2,
   AlertTriangle, Loader2, Send, ArrowLeft
 } from "lucide-react";
 import emailjs from "emailjs-com";
@@ -41,7 +41,7 @@ export default function FeedbackPage() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export default function FeedbackPage() {
 
     setSending(true);
     setError("");
-    setSuccess(false);
+    setSubmitted(false);
 
     try {
       const serviceId = process.env.VITE_EMAILJS_SERVICE_ID;
@@ -78,7 +78,7 @@ export default function FeedbackPage() {
 
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
 
-      setSuccess(true);
+      setSubmitted(true);
       setEmail("");
       setSubject("");
       setMessage("");
@@ -191,8 +191,8 @@ export default function FeedbackPage() {
                       Topic / Category
                     </label>
                     <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      value={feedbackType}
+                      onChange={(e) => setFeedbackType(e.target.value)}
                       disabled={sending}
                       className="w-full bg-[#03050c] border border-slate-800 rounded-xl px-4 py-3.5 text-xs text-slate-300 focus:outline-none focus:border-sky-500 transition-all font-semibold appearance-none"
                     >
