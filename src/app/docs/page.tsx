@@ -215,8 +215,25 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
             <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
             <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
             
-            <h3 className={h3}>Option 2: Docker Compose Deployment</h3>
-            <CodeBlock isLight={isLight} code="docker compose up -d" />
+            <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.26)</h3>
+            <p className={p}>Deploy, upgrade, or rollback Srevox directly on any Kubernetes cluster (EKS, GKE, AKS, minikube, k3s) using Helm:</p>
+            
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs font-bold text-indigo-400 block mb-1"># 1-Command Install:</span>
+                <CodeBlock isLight={isLight} code="helm install srevox ./charts/srevox --namespace srevox --create-namespace --set postgres.password=&quot;MySecurePassword123!&quot;" />
+              </div>
+
+              <div>
+                <span className="text-xs font-bold text-emerald-400 block mb-1"># Zero-Downtime Upgrade:</span>
+                <CodeBlock isLight={isLight} code="helm upgrade srevox ./charts/srevox --namespace srevox --reuse-values" />
+              </div>
+
+              <div>
+                <span className="text-xs font-bold text-amber-400 block mb-1"># 1-Click Rollback:</span>
+                <CodeBlock isLight={isLight} code="helm rollback srevox 1 --namespace srevox" />
+              </div>
+            </div>
 
             <h3 className={h3}>Default Administrator Credentials</h3>
             <div className={`p-4 rounded-xl border font-mono text-xs ${cardBg}`}>
