@@ -215,7 +215,7 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
             <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
             <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
             
-            <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.26)</h3>
+            <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.27)</h3>
             <p className={p}>Deploy, upgrade, or rollback Srevox directly on any Kubernetes cluster (EKS, GKE, AKS, minikube, k3s) using Helm:</p>
             
             <div className="space-y-3">
