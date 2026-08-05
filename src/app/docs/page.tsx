@@ -215,22 +215,22 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
             <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
             <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
             
-            <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.27)</h3>
-            <p className={p}>Deploy, upgrade, or rollback Srevox directly on any Kubernetes cluster (EKS, GKE, AKS, minikube, k3s) using Helm:</p>
+            <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.28)</h3>
+            <p className={p}>Deploy, upgrade, or rollback Srevox directly on any Kubernetes cluster (EKS, GKE, AKS, minikube, k3s) using our official Helm repository:</p>
             
             <div className="space-y-3">
               <div>
-                <span className="text-xs font-bold text-indigo-400 block mb-1"># 1-Command Install:</span>
-                <CodeBlock isLight={isLight} code="helm install srevox ./charts/srevox --namespace srevox --create-namespace --set postgres.password=&quot;MySecurePassword123!&quot;" />
+                <span className="text-xs font-bold text-indigo-400 block mb-1"># 1. Add Helm Repository & Install (No clone needed):</span>
+                <CodeBlock isLight={isLight} code="helm repo add srevox https://raw.githubusercontent.com/Akshatsainiaks/srevox-setup/main/charts && helm repo update && helm install srevox srevox/srevox --namespace srevox --create-namespace --set postgres.password=&quot;MySecurePassword123!&quot;" />
               </div>
 
               <div>
-                <span className="text-xs font-bold text-emerald-400 block mb-1"># Zero-Downtime Upgrade:</span>
-                <CodeBlock isLight={isLight} code="helm upgrade srevox ./charts/srevox --namespace srevox --reuse-values" />
+                <span className="text-xs font-bold text-emerald-400 block mb-1"># 2. Zero-Downtime Upgrade:</span>
+                <CodeBlock isLight={isLight} code="helm upgrade srevox srevox/srevox --namespace srevox --reuse-values" />
               </div>
 
               <div>
-                <span className="text-xs font-bold text-amber-400 block mb-1"># 1-Click Rollback:</span>
+                <span className="text-xs font-bold text-amber-400 block mb-1"># 3. 1-Click Rollback:</span>
                 <CodeBlock isLight={isLight} code="helm rollback srevox 1 --namespace srevox" />
               </div>
             </div>
