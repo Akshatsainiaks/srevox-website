@@ -213,7 +213,7 @@ function FullScrollableDoc({ isLight }: { isLight: boolean }) {
           <Callout type="info" isLight={isLight}>Deploy Srevox using our single-line bash command, or run via Docker Compose.</Callout>
           <div className="text-left space-y-4">
             <h3 className={h3}>Option 1: One-Line Automatic Setup</h3>
-            <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox/main/setup.sh | bash" />
+            <CodeBlock isLight={isLight} code="curl -fsSL https://raw.githubusercontent.com/Akshatsainiaks/srevox-setup/main/setup.sh | bash" />
             
             <h3 className={h3}>Option 3: Kubernetes Helm Chart Deployment (v0.1.28)</h3>
             <p className={p}>Deploy, upgrade, or rollback Srevox directly on any Kubernetes cluster (EKS, GKE, AKS, minikube, k3s) using our official Helm repository:</p>
