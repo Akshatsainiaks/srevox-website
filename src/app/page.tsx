@@ -13,6 +13,9 @@ import {
 
 import { SrevoxLogo } from "@/components/SrevoxLogo";
 import { InteractiveIncidentConsole } from "@/components/InteractiveIncidentConsole";
+import { HeaderNavbar } from "@/components/HeaderNavbar";
+import { DocsLink } from "@/components/DocsLink";
+import { FeedbackLink } from "@/components/FeedbackLink";
 
 export default function LandingPage() {
   const { theme: mainTheme, setTheme: setMainTheme, mounted, isLight } = useSrevoxTheme("srevox_main_theme", "dark");
@@ -21,7 +24,6 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [highestPulls, setHighestPulls] = useState<number>(2102);
   const [highestRepo, setHighestRepo] = useState<string>("akshatsaini08/srevox-api");
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // In-view detection for Docker Image section
   const { ref: dockerSectionRef, isInView: isDockerSectionInView } = useInView<HTMLElement>();
@@ -76,137 +78,19 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-grid-pattern opacity-25" />
       </div>
 
-      {/* Header / Navbar */}
-      <header className={`sticky top-0 z-50 border-b backdrop-blur-2xl transition-all duration-300 ${
-        isLight 
-          ? "bg-white/85 border-slate-200/80 text-slate-800 shadow-sm" 
-          : "bg-[#030712]/85 border-slate-800/60 text-white shadow-2xl shadow-sky-950/20"
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3.5 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-sky-500/20 rounded-full blur-md group-hover:bg-sky-400/30 transition-all" />
-              <SrevoxLogo size={36} className="relative group-hover:scale-105 transition-transform" />
-            </div>
-            <span className={`font-black text-xl tracking-tight ${isLight ? "text-slate-900" : "bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent"}`}>
-              Srevox
-            </span>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <nav className={`hidden md:flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
-            isLight ? "text-slate-600" : "text-slate-300"
-          }`}>
-            <a href="#features" className="px-3.5 py-2 rounded-xl hover:text-sky-400 hover:bg-sky-500/10 transition-all">Features</a>
-            <a href="#architecture" className="px-3.5 py-2 rounded-xl hover:text-sky-400 hover:bg-sky-500/10 transition-all">Architecture</a>
-            <a href="#setup" className="px-3.5 py-2 rounded-xl hover:text-sky-400 hover:bg-sky-500/10 transition-all">Quick Setup</a>
-            <Link href="/docs" target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-xl hover:text-sky-400 hover:bg-sky-500/10 transition-all">Docs</Link>
-            <Link href="/feedback" className="px-3.5 py-2 rounded-xl text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 transition-all">Feedback</Link>
-            <a href="#faq" className="px-3.5 py-2 rounded-xl hover:text-sky-400 hover:bg-sky-500/10 transition-all">FAQ</a>
-          </nav>
-
-          {/* Actions & Buttons */}
-          <div className="flex items-center gap-2.5">
-            {/* Theme Switcher */}
-            <button
-              type="button"
-              onClick={toggleMainTheme}
-              className={`p-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                isLight 
-                  ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" 
-                  : "bg-slate-900/90 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 hover:bg-slate-800"
-              }`}
-              title={`Switch to ${isLight ? "Dark" : "Light"} Theme`}
-            >
-              {isLight ? (
-                <>
-                  <Moon className="w-4 h-4 text-sky-600" />
-                  <span className="hidden lg:inline text-[11px]">Dark</span>
-                </>
-              ) : (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400" />
-                  <span className="hidden lg:inline text-[11px]">Light</span>
-                </>
-              )}
-            </button>
-
-            {/* GitHub Link */}
-            <a 
-              href="https://github.com/Akshatsainiaks/srevox" 
-              target="_blank" 
-              rel="noreferrer"
-              className={`hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
-                isLight 
-                  ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" 
-                  : "bg-slate-900/90 border-slate-800 text-slate-200 hover:text-white hover:border-sky-500/30 hover:bg-slate-850"
-              }`}
-            >
-              <GitBranch className="w-4 h-4 text-sky-400" />
-              <span>GitHub</span>
-            </a>
-
-            {/* Docs Primary CTA */}
-            <Link 
-              href="/docs" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4.5 py-2 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-extrabold shadow-lg shadow-sky-500/20 hover:shadow-sky-500/35 hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center gap-1.5"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            {/* Mobile Nav Toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(!mobileNavOpen)}
-              className={`p-2.5 rounded-xl border text-xs font-bold transition-all md:hidden ${
-                isLight ? "bg-slate-100 border-slate-200 text-slate-700" : "bg-slate-900 border-slate-800 text-slate-300"
-              }`}
-              aria-label="Toggle navigation menu"
-            >
-              {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Drawer Dropdown */}
-        {mobileNavOpen && (
-          <div className={`md:hidden border-b p-6 space-y-4 shadow-2xl backdrop-blur-2xl transition-all ${
-            isLight ? "bg-white/95 border-slate-200 text-slate-900" : "bg-[#030712]/95 border-slate-800 text-white"
-          }`}>
-            <nav className="flex flex-col space-y-3 font-extrabold text-sm uppercase tracking-wider">
-              <a href="#features" onClick={() => setMobileNavOpen(false)} className="hover:text-sky-400 transition-colors">Features</a>
-              <a href="#architecture" onClick={() => setMobileNavOpen(false)} className="hover:text-sky-400 transition-colors">Architecture</a>
-              <a href="#setup" onClick={() => setMobileNavOpen(false)} className="hover:text-sky-400 transition-colors">Quick Setup</a>
-              <Link href="/docs" target="_blank" rel="noopener noreferrer" onClick={() => setMobileNavOpen(false)} className="hover:text-sky-400 transition-colors">Documentation</Link>
-              <Link href="/feedback" onClick={() => setMobileNavOpen(false)} className="text-sky-400 hover:text-sky-300 transition-colors">Feedback</Link>
-              <a href="#faq" onClick={() => setMobileNavOpen(false)} className="hover:text-sky-400 transition-colors">FAQ</a>
-            </nav>
-            <div className="pt-4 border-t border-slate-800/60 flex items-center justify-between">
-              <a 
-                href="https://github.com/Akshatsainiaks/srevox" 
-                target="_blank" 
-                rel="noreferrer"
-                className="flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white"
-              >
-                <GitBranch className="w-4 h-4 text-sky-400" />
-                <span>GitHub Repository</span>
-              </a>
-            </div>
-          </div>
-        )}
-      </header>
+      {/* Shared Header & Products Mega Menu */}
+      <HeaderNavbar isLight={isLight} onToggleTheme={toggleMainTheme} activeProduct="k8s" />
 
       {/* Main Hero Section */}
       <main className="relative z-10 flex-1">
         <section className="max-w-7xl mx-auto px-6 pt-24 pb-20 text-center space-y-8">
           
           {/* Security & Self-Hosted Pill */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-extrabold shadow-xl">
-            <ShieldCheck className="w-4 h-4 text-sky-400" />
-            <span>100% Self-Hosted • Zero Data Leaks</span>
+          <div className="flex items-center justify-center">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-extrabold shadow-xl">
+              <ShieldCheck className="w-4 h-4 text-sky-400" />
+              <span>100% Self-Hosted • Zero Data Leaks</span>
+            </div>
           </div>
 
           {/* Headline */}
@@ -585,8 +469,8 @@ export default function LandingPage() {
             <div className="space-y-3">
               <h4 className={`text-xs font-bold uppercase tracking-widest ${isLight ? "text-slate-900" : "text-white"}`}>Resources</h4>
               <ul className={`space-y-2 text-xs font-medium ${isLight ? "text-slate-600" : "text-slate-400"}`}>
-                <li><Link href="/docs" target="_blank" rel="noopener noreferrer" className="hover:text-sky-400 transition-colors">Documentation</Link></li>
-                <li><Link href="/feedback" className="text-sky-400 font-bold hover:text-sky-300 transition-colors">Submit Feedback</Link></li>
+                <li><DocsLink className="hover:text-sky-400 transition-colors">Documentation</DocsLink></li>
+                <li><FeedbackLink className="text-sky-400 font-bold hover:text-sky-300 transition-colors">Submit Feedback</FeedbackLink></li>
                 <li><a href="https://github.com/Akshatsainiaks/srevox" target="_blank" rel="noreferrer" className="hover:text-sky-400 transition-colors">GitHub Repository</a></li>
               </ul>
             </div>

@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 
 import { SrevoxLogo } from "@/components/SrevoxLogo";
+import { FeedbackLink } from "@/components/FeedbackLink";
 import { supabase, getDynamicDocsData } from "@/lib/supabase";
 
 // Custom Callout Box Component (Light/Dark Mode Aware)
@@ -642,9 +643,9 @@ export default function DocsPage() {
             )}
           </button>
 
-          <Link href="/feedback" className="text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-2">
+          <FeedbackLink className="text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/20 rounded-xl px-4 py-2">
             <MessageSquare className="w-3.5 h-3.5" /> Feedback
-          </Link>
+          </FeedbackLink>
           <Link href="/" className={`text-xs font-bold transition-colors flex items-center gap-1.5 border rounded-xl px-4 py-2 ${
             isLight ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200" : "bg-slate-900/80 border-slate-800 text-slate-300 hover:text-white"
           }`}>

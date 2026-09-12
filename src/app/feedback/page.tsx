@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import emailjs from "emailjs-com";
 import { useSrevoxTheme } from "@/components/ThemeProvider";
+import { DocsLink } from "@/components/DocsLink";
 
 // Srevox Brand Logo Component
 function SrevoxLogo({ size = 32, className = "" }: { size?: number; className?: string }) {
@@ -129,7 +130,7 @@ export default function FeedbackPage() {
             isLight ? "text-slate-600" : "text-slate-400"
           }`}>
             <Link href="/#demo" className="hover:text-sky-500 transition-colors">Console Demo</Link>
-            <Link href="/docs" className="hover:text-sky-500 transition-colors">Documentation</Link>
+            <DocsLink className="hover:text-sky-500 transition-colors">Documentation</DocsLink>
             <Link href="/#channels" className="hover:text-sky-500 transition-colors">Integrations</Link>
             <Link href="/#configurator" className="hover:text-sky-500 transition-colors">Environment Builder</Link>
           </nav>
@@ -392,7 +393,7 @@ export default function FeedbackPage() {
                 Resources
               </h4>
               <ul className="space-y-2.5 text-sm font-medium">
-                <li><Link href="/docs" className={`${isLight ? "text-slate-600 hover:text-sky-600" : "text-slate-400 hover:text-sky-400"} transition-colors`}>Documentation</Link></li>
+                <li><DocsLink className={`${isLight ? "text-slate-600 hover:text-sky-600" : "text-slate-400 hover:text-sky-400"} transition-colors`}>Documentation</DocsLink></li>
                 <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className={`${isLight ? "text-slate-600 hover:text-sky-600" : "text-slate-400 hover:text-sky-400"} transition-colors`}>GitHub Repository</a></li>
                 <li><a href="https://github.com/Akshatsainiaks/srevox-setup" target="_blank" rel="noopener noreferrer" className={`${isLight ? "text-slate-600 hover:text-sky-600" : "text-slate-400 hover:text-sky-400"} transition-colors`}>Deploy Configs</a></li>
               </ul>

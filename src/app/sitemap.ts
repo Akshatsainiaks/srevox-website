@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://srevox.com";
+  const baseUrl = "https://srevox.in";
 
   return [
     {
@@ -11,16 +11,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/docs`,
+      url: "https://docs.srevox.in",
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/feedback`,
+      url: "https://feedback.srevox.in",
       lastModified: new Date(),
       changeFrequency: "monthly",
-      priority: 0.5,
+      priority: 0.7,
     },
   ];
 }

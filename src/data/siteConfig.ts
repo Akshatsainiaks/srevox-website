@@ -1,3 +1,5 @@
+import { getDocsUrl, getFeedbackUrl } from "@/lib/siteUrls";
+
 export interface NavLink {
   label: string;
   href: string;
@@ -31,6 +33,7 @@ export interface SiteConfig {
   description: string;
   githubUrl: string;
   docsUrl: string;
+  feedbackUrl?: string;
   installScriptCmd: string;
   installDockerCmd: string;
   navLinks: NavLink[];
@@ -44,15 +47,16 @@ export const siteConfig: SiteConfig = {
   tagline: "Autonomous AI Incident Diagnostics for Kubernetes Workloads",
   description: "Self-hosted, air-gapped root cause analysis engine. Monitor cluster health, catch CrashLoopBackOff events, and receive auto-remediation patches in seconds.",
   githubUrl: "https://github.com/Akshatsainiaks/srevox",
-  docsUrl: "/docs",
+  docsUrl: getDocsUrl(),
+  feedbackUrl: getFeedbackUrl(),
   installScriptCmd: "curl -sSL https://srevox.dev/install.sh | bash",
   installDockerCmd: "docker run -d -p 3000:3000 --name srevox-engine srevox/srevox:latest",
   navLinks: [
     { label: "Features", href: "#features" },
     { label: "Architecture", href: "#architecture" },
     { label: "Quick Setup", href: "#setup" },
-    { label: "Documentation", href: "/docs", external: true },
-    { label: "Feedback", href: "/feedback" },
+    { label: "Documentation", href: getDocsUrl(), external: process.env.NODE_ENV !== "development" },
+    { label: "Feedback", href: getFeedbackUrl(), external: process.env.NODE_ENV !== "development" },
     { label: "FAQ", href: "#faq" }
   ],
   features: [

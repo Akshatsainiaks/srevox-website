@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://srevox.com/sitemap.xml",
+    sitemap: "https://srevox.in/sitemap.xml",
   };
 }

@@ -25,12 +25,12 @@ export const metadata: Metadata = {
     "Datadog Alternative",
     "On-Premises Kubernetes Monitoring"
   ],
-  authors: [{ name: "Srevox Core Team", url: "https://srevox.com" }],
-  metadataBase: new URL("https://srevox.com"),
+  authors: [{ name: "Srevox Core Team", url: "https://srevox.in" }],
+  metadataBase: new URL("https://srevox.in"),
   openGraph: {
     title: "Srevox — Self-Hosted Kubernetes Observability & AI Root-Cause Analysis",
     description: "Detect pod crashes instantly with automated AI diagnostics and zero-data-leak privacy. 100% open-source & self-hosted.",
-    url: "https://srevox.com",
+    url: "https://srevox.in",
     siteName: "Srevox",
     locale: "en_US",
     type: "website",
